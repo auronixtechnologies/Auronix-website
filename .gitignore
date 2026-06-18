@@ -1,0 +1,16 @@
+.env
+.env.local
+node_modules/
+dist/
+.DS_Store
+*.log
+.vscode/settings.json
+
+# Cache directories and files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.eslintcache
+.parcel-cache/
+.cache/

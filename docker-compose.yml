@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: auronix-db
+
+    environment:
+      POSTGRES_USER: auronix_admin
+      POSTGRES_PASSWORD: Auronix2602
+      POSTGRES_DB: auronix_db
+
+    ports:
+      - "5435:5432"
+
+    volumes:
+      - auronix_postgres_data:/var/lib/postgresql/data
+      - type: bind
+        source: ./init-db.sql
+        target: /docker-entrypoint-initdb.d/01-init.sql
+        read_only: true
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auronix_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: unless-stopped
+
+    networks:
+      - auronix
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@auronix.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+    ports:
+      - "5050:80"
+
+    depends_on:
+      - postgres
+
+    restart: unless-stopped
+
+    networks:
+      - auronix
+
+volumes:
+  auronix_postgres_data:
+
+networks:
+  auronix:
+    driver: bridge
