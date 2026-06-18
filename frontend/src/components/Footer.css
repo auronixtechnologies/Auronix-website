@@ -1,0 +1,199 @@
+/**
+ * Footer Component (Restored columns with backdrop watermark styles)
+ */
+
+.footer {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--glass-border);
+  padding: 80px 0 0 0;
+  margin-top: auto;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 30%;
+  width: 40%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  box-shadow: 0 0 20px var(--accent-primary);
+  z-index: 1;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 2; /* Sits above the watermark */
+}
+
+.footer-section {
+  position: relative;
+}
+
+.footer-section h3 {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+
+.footer-logo-img {
+  height: 72px;
+  width: auto;
+  filter: var(--logo-filter, invert(1));
+  display: block;
+  margin-bottom: 4px;
+  transition: filter 0.3s ease;
+}
+
+.footer-section h4 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-section h4::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 20px;
+  height: 2px;
+  background: var(--accent-secondary);
+}
+
+.footer-section p {
+  line-height: 1.6;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 12px;
+}
+
+.footer-section a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.footer-section a:hover {
+  color: var(--text-primary);
+  padding-left: 5px;
+}
+
+.social-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.social-links a {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.social-links a:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px var(--accent-glow);
+  padding-left: 0;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--glass-border);
+  padding: 30px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  position: relative;
+  z-index: 2;
+}
+
+.copyright-text {
+  position: relative;
+  z-index: 2;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
+.privacy-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  position: relative;
+  z-index: 3;
+}
+
+.privacy-link:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+/* Large Backdrop Watermark Text (Placed cleanly below copyright bar in document flow) */
+.footer-watermark {
+  position: relative;
+  margin: 30px auto 40px;
+  text-align: center;
+  font-size: clamp(6rem, 18vw, 22rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-primary);
+  opacity: var(--watermark-opacity, 0.015);
+  user-select: none;
+  pointer-events: none;
+  z-index: 1;
+  line-height: 0.8;
+  white-space: nowrap;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+
+  .footer {
+    padding: 60px 0 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}

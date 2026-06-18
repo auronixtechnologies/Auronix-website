@@ -1,0 +1,40 @@
+.loader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 40px 0;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.loader-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  animation: bounce 1s infinite;
+}
+
+.loader-dot.delay-1 {
+  animation-delay: -0.3s;
+}
+
+.loader-dot.delay-2 {
+  animation-delay: -0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
