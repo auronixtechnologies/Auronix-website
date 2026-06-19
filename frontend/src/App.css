@@ -62,7 +62,7 @@
   --heading-gradient: linear-gradient(to right, #0f172a, #4f46e5);
   --logo-filter: none;
   --logo-filter-hover: drop-shadow(0 0 6px rgba(79, 70, 229, 0.3));
-  --watermark-opacity: 0.03;
+  --watermark-opacity: 0.06;
 }
 
 * {

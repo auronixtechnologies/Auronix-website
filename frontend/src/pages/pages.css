@@ -280,6 +280,11 @@
   letter-spacing: 0.5px;
 }
 
+.team-card h2::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .project-card p,
 .service-card p {
   color: var(--text-secondary);
@@ -615,6 +620,12 @@
   overflow: hidden;
 }
 
+[data-theme="light"] .cta {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(79, 70, 229, 0.06) 100%);
+  border-color: rgba(79, 70, 229, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
 .cta::before {
   content: '';
   position: absolute;
@@ -624,6 +635,10 @@
   height: 100%;
   background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 70%);
   pointer-events: none;
+}
+
+[data-theme="light"] .cta::before {
+  background: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.1), transparent 70%);
 }
 
 .cta h2 {
