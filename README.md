@@ -187,6 +187,21 @@ Auronix Tech/
    
    The frontend will be available at `http://localhost:5173`
 
+## 🔐 Admin Panel Access
+
+The admin dashboard is a secure area for managing team members, projects, and leads. 
+
+### URLs
+- **Admin Login Page**: `http://localhost:5173/auronix-admin`
+- **Admin Dashboard**: `http://localhost:5173/auronix-admin/dashboard` *(Requires successful login)*
+
+### Default Credentials
+- **Admin Email**: `auronixtechnologies@gmail.com`
+- **Admin Password**: `Aura@2003!`
+
+> [!WARNING]
+> These credentials are set in the backend environment/configurations. Ensure you update them or secure your production deployment with actual environment variables or database-managed admins before going public.
+
 ## 📚 API Documentation
 
 ### Base URL
