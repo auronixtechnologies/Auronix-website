@@ -35,7 +35,8 @@
   gap: 40px;
   margin-bottom: 80px;
   position: relative;
-  z-index: 2; /* Sits above the watermark */
+  z-index: 2;
+  /* Sits above the watermark */
 }
 
 .footer-section {
@@ -125,7 +126,7 @@
 .social-links a:hover {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: white;
+  color: rgb(246, 255, 0);
   transform: translateY(-3px);
   box-shadow: 0 4px 15px var(--accent-glow);
   padding-left: 0;
