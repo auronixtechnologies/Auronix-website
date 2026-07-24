@@ -3,66 +3,97 @@
  */
 
 :root {
-  /* Default: Dark Theme */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #13131f;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  /* Default: Gunmetal × Champagne Light Theme */
+  --bg-primary: #FBF9F4; /* Champagne Ivory background */
+  --bg-secondary: #EFECE1; /* Soft Warm Cream background */
+  --card-bg: #FFFFFF; /* White cards */
+  --border-color: rgba(21, 21, 21, 0.08); /* Gunmetal subtle border */
   
-  /* Accents */
-  --accent-primary: #8b5cf6; /* Vibrant Purple */
-  --accent-secondary: #06b6d4; /* Vibrant Cyan */
-  --accent-glow: rgba(139, 92, 246, 0.3);
-  --accent-glow-cyan: rgba(6, 182, 212, 0.3);
+  --text-primary: #151515; /* Deep Gunmetal */
+  --text-secondary: #262626; /* Charcoal */
+  --text-muted: #777777; /* Muted gray */
+  
+  /* Accents & Brand */
+  --primary: #A18F68; /* Champagne Accent */
+  --primary-hover: #85744f; /* Darker Champagne */
+  --secondary: #262626; /* Charcoal */
+  --accent: #A18F68; /* Champagne Accent */
+  --accent-primary: var(--primary);
+  --accent-secondary: var(--secondary);
+  
+  --btn-bg: #A18F68;
+  --btn-hover: #85744f;
+  --btn-text: #151515;
+  
+  /* Accent Glows (strictly mapped colors) */
+  --accent-glow: rgba(161, 143, 104, 0.05);
+  --accent-glow-cyan: rgba(21, 21, 21, 0.04);
   
   /* Glassmorphism & Material */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-  --card-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  --input-bg: rgba(0, 0, 0, 0.2);
-  --btn-secondary-bg: rgba(255, 255, 255, 0.05);
-  --btn-secondary-hover: rgba(255, 255, 255, 0.1);
-  --footer-bg: rgba(10, 10, 15, 0.9);
-  --nav-bg: rgba(10, 10, 15, 0.7);
-  --scrollbar-thumb: #2a2a35;
+  --glass-bg: rgba(251, 249, 244, 0.85);
+  --glass-border: rgba(21, 21, 21, 0.06);
+  --glass-border-hover: rgba(161, 143, 104, 0.2);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  --card-shadow: 0 10px 30px rgba(21, 21, 21, 0.03);
+  --input-bg: rgba(239, 236, 225, 0.5);
+  --btn-secondary-bg: transparent;
+  --btn-secondary-hover: rgba(21, 21, 21, 0.05);
+  --footer-bg: #151515; /* Deep Gunmetal dark footer */
+  --nav-bg: rgba(251, 249, 244, 0.85);
+  --scrollbar-thumb: #A18F68;
   
-  --heading-gradient: linear-gradient(to right, #ffffff, #cbd5e1);
-  --logo-filter: invert(1);
-  --logo-filter-hover: invert(1) drop-shadow(0 0 6px rgba(139, 92, 246, 0.8));
-  --watermark-opacity: 0.015;
+  --heading-gradient: none;
+  --logo-filter: invert(10%) sepia(5%) saturate(300%) hue-rotate(10deg) brightness(95%) contrast(90%);
+  --logo-filter-hover: invert(61%) sepia(21%) saturate(542%) hue-rotate(5deg) brightness(93%) contrast(90%);
+  --watermark-opacity: 0.03;
+  --dot-pattern: rgba(21, 21, 21, 0.03);
 }
 
-[data-theme="light"] {
-  --bg-primary: #f8fafc; /* light blue-slate */
-  --bg-secondary: #ffffff;
-  --text-primary: #0f172a; /* deep slate */
-  --text-secondary: #475569;
+[data-theme="dark"] {
+  /* Gunmetal × Champagne Dark Theme */
+  --bg-primary: #151515; /* Deep Gunmetal background */
+  --bg-secondary: #262626; /* Charcoal / surface gunmetal */
+  --card-bg: #262626; /* Charcoal cards */
+  --border-color: rgba(161, 143, 104, 0.15); /* Champagne subtle border */
   
-  /* Accents - Indigo & Ocean Teal */
-  --accent-primary: #4f46e5;
-  --accent-secondary: #0891b2;
-  --accent-glow: rgba(79, 70, 229, 0.15);
-  --accent-glow-cyan: rgba(8, 145, 178, 0.15);
+  --text-primary: #FFFFFF; /* Crisp White text */
+  --text-secondary: #E6D8B8; /* Warm Champagne text */
+  --text-muted: #888888; /* Graphite muted text */
+  
+  /* Accents & Brand */
+  --primary: #A18F68; /* Champagne Accent */
+  --primary-hover: #bfae8a; /* Brighter Champagne */
+  --secondary: #E6D8B8; /* Warm Champagne */
+  --accent: #A18F68; /* Champagne Accent */
+  --accent-primary: var(--primary);
+  --accent-secondary: var(--accent);
+  
+  --btn-bg: #A18F68;
+  --btn-hover: #bfae8a;
+  --btn-text: #151515;
+  
+  /* Accent Glows (strictly mapped colors) */
+  --accent-glow: rgba(161, 143, 104, 0.15);
+  --accent-glow-cyan: rgba(230, 216, 184, 0.12);
   
   /* Glassmorphism & Material */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(15, 23, 42, 0.08);
-  --glass-border-hover: rgba(15, 23, 42, 0.15);
-  --glass-highlight: rgba(255, 255, 255, 0.6);
-  --card-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  --input-bg: #f1f5f9;
-  --btn-secondary-bg: #cbd5e1;
-  --btn-secondary-hover: #94a3b8;
-  --footer-bg: #f1f5f9;
-  --nav-bg: rgba(248, 250, 252, 0.8);
-  --scrollbar-thumb: #cbd5e1;
+  --glass-bg: rgba(21, 21, 21, 0.75);
+  --glass-border: rgba(161, 143, 104, 0.08);
+  --glass-border-hover: rgba(230, 216, 184, 0.22);
+  --glass-highlight: rgba(255, 255, 255, 0.02);
+  --card-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+  --input-bg: rgba(38, 38, 38, 0.95);
+  --btn-secondary-bg: transparent;
+  --btn-secondary-hover: rgba(161, 143, 104, 0.08);
+  --footer-bg: #0d0d0d;
+  --nav-bg: rgba(21, 21, 21, 0.8);
+  --scrollbar-thumb: #262626;
   
-  --heading-gradient: linear-gradient(to right, #0f172a, #4f46e5);
-  --logo-filter: none;
-  --logo-filter-hover: drop-shadow(0 0 6px rgba(79, 70, 229, 0.3));
-  --watermark-opacity: 0.06;
+  --heading-gradient: none;
+  --logo-filter: invert(90%) sepia(5%) saturate(100%) hue-rotate(10deg) brightness(102%) contrast(98%);
+  --logo-filter-hover: invert(61%) sepia(21%) saturate(542%) hue-rotate(5deg) brightness(93%) contrast(90%);
+  --watermark-opacity: 0.02;
+  --dot-pattern: rgba(161, 143, 104, 0.06);
 }
 
 * {
@@ -72,23 +103,37 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.2px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
+  background-color: #FDFDFB; /* Premium Studio White */
   background-image: 
-    radial-gradient(circle at 15% 50%, var(--accent-glow), transparent 25%),
-    radial-gradient(circle at 85% 30%, var(--accent-glow-cyan), transparent 25%);
+    radial-gradient(circle at 10% 20%, rgba(161, 143, 104, 0.12), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(115, 140, 165, 0.08), transparent 40%),
+    radial-gradient(circle at 50% 60%, rgba(161, 143, 104, 0.06), transparent 35%),
+    radial-gradient(rgba(161, 143, 104, 0.12) 1.2px, transparent 1.2px),
+    linear-gradient(rgba(161, 143, 104, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(161, 143, 104, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px, 60px 60px, 60px 60px;
   background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+  transition: background-color 0.4s ease, color 0.4s ease, background-image 0.4s ease;
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(circle at 15% 50%, var(--accent-glow), transparent 25%),
+    radial-gradient(circle at 85% 30%, var(--accent-glow-cyan), transparent 25%),
+    radial-gradient(var(--dot-pattern) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
 }

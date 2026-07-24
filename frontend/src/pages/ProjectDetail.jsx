@@ -12,14 +12,14 @@ import Loader from '../components/Loader';
 
 // Role-to-color mapping for orbit nodes
 const ROLE_COLORS = {
-  frontend: { color: '#06b6d4', glow: 'rgba(6,182,212,0.6)', label: 'Frontend' },
-  backend: { color: '#8b5cf6', glow: 'rgba(139,92,246,0.6)', label: 'Backend' },
-  'ui/ux': { color: '#f43f5e', glow: 'rgba(244,63,94,0.6)', label: 'UI/UX' },
-  'full stack': { color: '#10b981', glow: 'rgba(16,185,129,0.6)', label: 'Full Stack' },
-  ml: { color: '#f59e0b', glow: 'rgba(245,158,11,0.6)', label: 'ML Engineer' },
-  devops: { color: '#64748b', glow: 'rgba(100,116,139,0.6)', label: 'DevOps' },
-  lead: { color: '#ec4899', glow: 'rgba(236,72,153,0.6)', label: 'Tech Lead' },
-  default: { color: '#a78bfa', glow: 'rgba(167,139,250,0.6)', label: 'Developer' },
+  frontend: { color: '#A18F68', glow: 'rgba(161, 143, 104, 0.4)', text: '#151515', label: 'Frontend' },
+  backend: { color: '#262626', glow: 'rgba(38, 38, 38, 0.4)', text: '#FFFFFF', label: 'Backend' },
+  'ui/ux': { color: '#E6D8B8', glow: 'rgba(230, 216, 184, 0.4)', text: '#151515', label: 'UI/UX' },
+  'full stack': { color: '#FFFFFF', glow: 'rgba(255, 255, 255, 0.4)', text: '#151515', label: 'Full Stack' },
+  ml: { color: '#A18F68', glow: 'rgba(161, 143, 104, 0.4)', text: '#151515', label: 'ML Engineer' },
+  devops: { color: '#262626', glow: 'rgba(38, 38, 38, 0.4)', text: '#FFFFFF', label: 'DevOps' },
+  lead: { color: '#A18F68', glow: 'rgba(161, 143, 104, 0.4)', text: '#151515', label: 'Tech Lead' },
+  default: { color: '#A18F68', glow: 'rgba(161, 143, 104, 0.4)', text: '#151515', label: 'Developer' },
 };
 
 function getRoleStyle(role) {
@@ -107,8 +107,8 @@ function TeamConstellation({ members }) {
         >
           <defs>
             <radialGradient id="planetGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="#A18F68" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#262626" stopOpacity="0.4" />
             </radialGradient>
             {members.map((m, i) => {
               const rs = getRoleStyle(m.role);
@@ -296,12 +296,12 @@ export default function ProjectDetail() {
   }
 
   const domainColors = {
-    Web: '#06b6d4',
-    ML: '#f59e0b',
-    LLM: '#8b5cf6',
-    MCP: '#10b981',
+    Web: '#A18F68',
+    ML: '#E6D8B8',
+    LLM: '#FFFFFF',
+    MCP: '#262626',
   };
-  const domainColor = domainColors[project.domain] || '#8b5cf6';
+  const domainColor = domainColors[project.domain] || '#A18F68';
 
   return (
     <div className="pd-page">
@@ -329,7 +329,7 @@ export default function ProjectDetail() {
             <button 
               onClick={() => navigate(`/contact?project=${encodeURIComponent(project.title)}&service=${encodeURIComponent(project.domain)}`)} 
               className="pd-action-btn pd-btn-demo" 
-              style={{ '--domain-color': domainColor, padding: '12px 32px', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              style={{ '--domain-color': domainColor }}>
               <ShoppingCart size={18} /> BUY THIS PROJECT
             </button>
           </div>
@@ -436,7 +436,7 @@ export default function ProjectDetail() {
                       )}
                       <div
                         className="ptm-role-badge"
-                        style={{ background: rs.color }}
+                        style={{ background: rs.color, color: rs.text || '#FFFFFF' }}
                       >
                         {rs.label}
                       </div>

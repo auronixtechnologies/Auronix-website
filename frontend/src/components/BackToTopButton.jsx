@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { ArrowUp } from 'lucide-react';
 
 const BackToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Show button when page is scrolled down
-  const toggleVisibility = () => {
-    if (window.scrollY > 300) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
+  const handleScroll = () => {
+    // Show button when scrolled past 300px
+    const scrolled = window.scrollY;
+    setIsVisible(scrolled > 300);
+
+    // Calculate scroll progress percentage
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrolled / docHeight) * 100 : 0;
+    setScrollProgress(progress);
   };
 
   const scrollToTop = () => {
@@ -21,96 +25,148 @@ const BackToTopButton = () => {
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   if (!isVisible) {
     return null;
   }
 
+  // Circular progress math (r=20, circumference=125.6)
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (scrollProgress / 100) * circumference;
+
   return (
-    <StyledWrapper>
-      <button className="button fade-in" onClick={scrollToTop} aria-label="Back to Top">
-        <svg className="svgIcon" viewBox="0 0 384 512">
-          <path d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2V448c0 17.7 14.3 32 32 32s32-14.3 32-32V141.2L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z" />
-        </svg>
-      </button>
+    <StyledWrapper onClick={scrollToTop} aria-label="Back to Top">
+      <svg className="progress-ring" width="56" height="56">
+        <circle
+          className="progress-ring-bg"
+          cx="28"
+          cy="28"
+          r={radius}
+          strokeWidth="3"
+        />
+        <circle
+          className="progress-ring-indicator"
+          cx="28"
+          cy="28"
+          r={radius}
+          strokeWidth="3"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+        />
+      </svg>
+      <div className="arrow-container">
+        <ArrowUp className="arrow-icon" size={18} />
+      </div>
     </StyledWrapper>
   );
 }
 
-const StyledWrapper = styled.div`
+const StyledWrapper = styled.button`
   position: fixed;
   bottom: 40px;
   right: 40px;
   z-index: 1000;
+  width: 56px;
+  height: 56px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
 
-  .button {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    /* Align with site's colors: dark secondary bg */
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--glass-border);
-    font-weight: 600;
+  .progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring-bg {
+    fill: transparent;
+    stroke: var(--border-color);
+  }
+
+  .progress-ring-indicator {
+    fill: transparent;
+    stroke: var(--primary);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s ease-out;
+  }
+
+  .arrow-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Box shadow leveraging the purple primary accent glow */
-    box-shadow: 0px 0px 0px 4px var(--accent-glow);
-    cursor: pointer;
-    transition-duration: 0.3s;
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
     position: relative;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
   }
 
-  .svgIcon {
-    width: 12px;
-    transition-duration: 0.3s;
+  .arrow-icon {
+    color: var(--text-primary);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .svgIcon path {
-    fill: var(--text-primary);
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px var(--accent-glow);
+    transform: translateY(-4px);
   }
 
-  .button:hover {
-    width: 140px;
-    border-radius: 50px;
-    transition-duration: 0.3s;
-    background-color: var(--accent-primary);
-    align-items: center;
-    border-color: var(--accent-primary);
+  &:hover .arrow-icon {
+    animation: launchArrow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--primary);
   }
 
-  .button:hover .svgIcon {
-    /* width: 20px; */
-    transition-duration: 0.3s;
-    transform: translateY(-200%);
+  @keyframes launchArrow {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    49% {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+    50% {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
-  .button::before {
-    position: absolute;
-    bottom: -20px;
-    content: "Back to Top";
-    color: white;
-    /* transition-duration: .3s; */
-    font-size: 0px;
-  }
-
-  .button:hover::before {
-    font-size: 13px;
-    opacity: 1;
-    bottom: unset;
-    /* transform: translateY(-30px); */
-    transition-duration: 0.3s;
-  }
-  
   @media (max-width: 768px) {
     bottom: 20px;
     right: 20px;
+    width: 48px;
+    height: 48px;
+
+    .progress-ring {
+      width: 48px;
+      height: 48px;
+    }
+    
+    /* Adjust radius for smaller width */
+    .progress-ring-bg,
+    .progress-ring-indicator {
+      cx: 24;
+      cy: 24;
+      r: 16;
+    }
   }
 `;
 

@@ -1,34 +1,24 @@
-/**
- * Team Page Component
- */
-
 import { useEffect, useState } from 'react';
-import { Folder } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Tilt } from 'react-tilt';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { teamAPI } from '../services/api';
 import './pages.css';
 import Loader from '../components/Loader';
 
-const defaultTiltOptions = {
-  reverse: false,
-  max: 15,
-  perspective: 1000,
-  scale: 1.05,
-  speed: 1000,
-  transition: true,
-  axis: null,
-  reset: true,
-  easing: "cubic-bezier(.03,.98,.52,.99)",
-};
-
 export default function Team() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardTab, setCardTab] = useState('about'); // 'about' | 'skills' | 'projects'
 
   useEffect(() => {
     fetchTeamMembers();
   }, []);
+
+  // Reset internal card tab when slider index shifts
+  useEffect(() => {
+    setCardTab('about');
+  }, [currentIndex]);
 
   const fetchTeamMembers = async () => {
     try {
@@ -42,82 +32,226 @@ export default function Team() {
     }
   };
 
+  const handleNext = () => {
+    setCurrentIndex(prev => (prev + 1) % members.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex(prev => (prev - 1 + members.length) % members.length);
+  };
+
+  if (loading) {
+    return (
+      <div className="page team-page-container">
+        <Loader />
+      </div>
+    );
+  }
+
+  const member = members[currentIndex];
+  const prevIndex = (currentIndex - 1 + members.length) % members.length;
+  const nextIndex = (currentIndex + 1) % members.length;
+  const prevMember = members[prevIndex];
+  const nextMember = members[nextIndex];
+
   return (
-    <div className="page">
+    <div className="page team-page-container">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="text-center team-hero"
       >
-        <h1>Our Team</h1>
-        <p className="intro">Meet the talented developers and designers behind Auronix Technologies</p>
+        <span className="team-subtitle-top">Our Engineers</span>
+        <h1>Meet the Team</h1>
+        <p className="intro team-intro-text">
+          Explore team bios, skills, and portfolio projects one by one.
+        </p>
       </motion.div>
 
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="team-grid">
-          {members.map((member, index) => (
-            <Tilt key={member.id} options={defaultTiltOptions}>
+      {members.length > 0 && (
+        <div className="team-slider-wrapper">
+          {/* Previous Card Preview (Left Side) */}
+          {members.length > 1 && (
+            <div className="side-card-preview left-preview" onClick={handlePrev}>
+              {prevMember.profile_image_data && prevMember.profile_image_type ? (
+                <img
+                  src={`data:${prevMember.profile_image_type};base64,${prevMember.profile_image_data}`}
+                  alt={prevMember.name}
+                  className="side-avatar"
+                />
+              ) : (
+                <div className="side-avatar-placeholder">
+                  {prevMember.name.substring(0, 2).toUpperCase()}
+                </div>
+              )}
+              <h3>{prevMember.name}</h3>
+              <p>{prevMember.role}</p>
+            </div>
+          )}
+
+          {/* Left Navigation Key */}
+          <button className="slider-nav-btn prev-btn" onClick={handlePrev} aria-label="Previous member">
+            <ChevronLeft size={24} />
+          </button>
+
+          {/* Core Spotlight Card */}
+          <div className="team-slider-card-container">
+            {/* 3D Stacked Deck Effect Cards */}
+            <div className="deck-card deck-card-back-left"></div>
+            <div className="deck-card deck-card-back-right"></div>
+            <div className="slider-mesh-glow"></div>
+
+            <AnimatePresence mode="wait">
               <motion.div
-                className="team-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+                key={currentIndex}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="team-card creative-team-card slider-active-card"
               >
-                {member.profile_image_data && member.profile_image_type && (
-                  <img
-                    src={`data:${member.profile_image_type};base64,${member.profile_image_data}`}
-                    alt={member.name}
-                    className="member-avatar"
-                  />
-                )}
-                <div className="member-info">
-                  <h2>{member.name}</h2>
-                  <p className="role">{member.role}</p>
-                  <p className="experience">{member.experience_level.toUpperCase()}</p>
-                  <p className="bio">{member.bio}</p>
-                  {member.skills && (
-                    <div className="skills">
-                      {member.skills.map((skill, idx) => (
-                        <span key={idx} className="skill-badge">
-                          {skill}
-                        </span>
-                      ))}
+                {/* Header Profile section */}
+                <div className="team-card-header">
+                  {member.profile_image_data && member.profile_image_type ? (
+                    <img
+                      src={`data:${member.profile_image_type};base64,${member.profile_image_data}`}
+                      alt={member.name}
+                      className="member-avatar"
+                    />
+                  ) : (
+                    <div className="member-avatar-placeholder">
+                      {member.name.substring(0, 2).toUpperCase()}
                     </div>
                   )}
+                  <div className="member-basic">
+                    <h2>{member.name}</h2>
+                    <p className="role">{member.role}</p>
+                    <span className="experience-badge">{member.experience_level.toUpperCase()}</span>
+                  </div>
+                </div>
+
+                {/* Sub-tab selection row */}
+                <div className="team-card-tabs">
+                  <button
+                    className={`card-tab-btn ${cardTab === 'about' ? 'active' : ''}`}
+                    onClick={() => setCardTab('about')}
+                  >
+                    Bio
+                  </button>
+                  <button
+                    className={`card-tab-btn ${cardTab === 'skills' ? 'active' : ''}`}
+                    onClick={() => setCardTab('skills')}
+                  >
+                    Skills
+                  </button>
                   {member.projects && member.projects.length > 0 && (
-                    <div className="member-projects">
-                      <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '16px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Folder size={14} /> Projects Worked On
-                      </h3>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                        {member.projects.map(proj => (
-                          <span key={proj.id} className="skill-badge" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                            {proj.title} <span style={{ opacity: 0.7, fontSize: '0.8em', marginLeft: '4px' }}>({proj.domain})</span>
+                    <button
+                      className={`card-tab-btn ${cardTab === 'projects' ? 'active' : ''}`}
+                      onClick={() => setCardTab('projects')}
+                    >
+                      Projects
+                    </button>
+                  )}
+                </div>
+
+                {/* Tab content bodies */}
+                <div className="team-card-body">
+                  {cardTab === 'about' && (
+                    <div className="tab-pane-content pane-about">
+                      <p className="bio">{member.bio}</p>
+                      <div className="member-socials">
+                        {member.linkedin_url && (
+                          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="social-link">
+                            LinkedIn
+                          </a>
+                        )}
+                        {member.portfolio_url && (
+                          <a href={member.portfolio_url} target="_blank" rel="noopener noreferrer" className="social-link">
+                            Portfolio
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {cardTab === 'skills' && (
+                    <div className="tab-pane-content pane-skills">
+                      <div className="skills-grid-badges">
+                        {member.skills.map((skill, idx) => (
+                          <span key={idx} className="skill-badge-tag">
+                            {skill}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
-                  <div className="links">
-                    {member.linkedin_url && (
-                      <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer">
-                        LinkedIn
-                      </a>
-                    )}
-                    {member.portfolio_url && (
-                      <a href={member.portfolio_url} target="_blank" rel="noopener noreferrer">
-                        Portfolio
-                      </a>
-                    )}
-                  </div>
+
+                  {cardTab === 'projects' && (
+                    <div className="tab-pane-content pane-projects">
+                      <div className="projects-mini-list">
+                        {member.projects.map(proj => (
+                          <div key={proj.id} className="project-mini-item">
+                            <span className="proj-dot"></span>
+                            <div className="proj-info">
+                              <span className="proj-title">{proj.title}</span>
+                              <span className="proj-domain">{proj.domain}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
-            </Tilt>
-          ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Right Navigation Key */}
+          <button className="slider-nav-btn next-btn" onClick={handleNext} aria-label="Next member">
+            <ChevronRight size={24} />
+          </button>
+
+          {/* Next Card Preview (Right Side) */}
+          {members.length > 1 && (
+            <div className="side-card-preview right-preview" onClick={handleNext}>
+              {nextMember.profile_image_data && nextMember.profile_image_type ? (
+                <img
+                  src={`data:${nextMember.profile_image_type};base64,${nextMember.profile_image_data}`}
+                  alt={nextMember.name}
+                  className="side-avatar"
+                />
+              ) : (
+                <div className="side-avatar-placeholder">
+                  {nextMember.name.substring(0, 2).toUpperCase()}
+                </div>
+              )}
+              <h3>{nextMember.name}</h3>
+              <p>{nextMember.role}</p>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Slider dots indicators */}
+      {members.length > 0 && (
+        <div className="team-slider-pagination">
+          <span className="pagination-counter">
+            {String(currentIndex + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(members.length).padStart(2, '0')}
+          </span>
+          <div className="pagination-dots">
+            {members.map((_, idx) => (
+              <button
+                key={idx}
+                className={`pagination-dot ${currentIndex === idx ? 'active' : ''}`}
+                onClick={() => setCurrentIndex(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+              ></button>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
