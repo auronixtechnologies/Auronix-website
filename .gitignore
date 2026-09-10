@@ -1,5 +1,8 @@
+# Every env file is secret; the .example templates are not.
 .env
-.env.local
+.env.*
+!.env.example
+!.env.*.example
 node_modules/
 dist/
 .DS_Store

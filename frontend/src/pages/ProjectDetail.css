@@ -1,0 +1,774 @@
+/**
+ * ProjectDetail.css — Immersive project detail page styles (Luxury Theme)
+ */
+
+/* ── Loading / Error States ── */
+.pd-loading,
+.pd-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+  color: var(--text-secondary);
+}
+
+.pd-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: pd-spin 0.8s linear infinite;
+}
+
+@keyframes pd-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Page Layout ── */
+.pd-page {
+  min-height: 100vh;
+  animation: fadeIn 0.5s ease;
+}
+
+/* ── Hero Banner ── */
+.pd-hero {
+  position: relative;
+  padding: 100px 40px 80px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+.pd-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 50%, color-mix(in srgb, var(--domain-color, var(--primary)) 12%, transparent), transparent 55%),
+    radial-gradient(ellipse at 90% 20%, rgba(161, 143, 104, 0.08), transparent 50%),
+    var(--bg-primary);
+  z-index: 0;
+}
+
+.pd-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pd-title {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  margin: 16px 0 20px;
+  line-height: 1.1;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.pd-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 750px;
+  line-height: 1.75;
+  margin-bottom: 36px;
+}
+
+.pd-domain-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  margin-bottom: 28px;
+}
+
+.pd-back-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border-color: var(--primary);
+}
+
+/* ── Hero Action Buttons ── */
+.pd-hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pd-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.pd-btn-demo {
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: var(--btn-text) !important;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.pd-btn-demo:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--accent-glow), 0 0 10px var(--accent-glow);
+}
+
+/* ── Floating Particles ── */
+.pd-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pd-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--domain-color, var(--primary));
+  opacity: 0.15;
+  animation: pd-float-particle linear infinite;
+}
+
+.pd-particle-0 { width: 6px; height: 6px; left: 15%; top: 30%; animation-duration: 8s; }
+.pd-particle-1 { width: 4px; height: 4px; left: 70%; top: 20%; animation-duration: 11s; animation-delay: -2s; }
+.pd-particle-2 { width: 8px; height: 8px; left: 85%; top: 60%; animation-duration: 14s; animation-delay: -5s; }
+.pd-particle-3 { width: 3px; height: 3px; left: 40%; top: 80%; animation-duration: 9s; animation-delay: -3s; }
+.pd-particle-4 { width: 5px; height: 5px; left: 25%; top: 65%; animation-duration: 12s; animation-delay: -1s; }
+.pd-particle-5 { width: 7px; height: 7px; left: 60%; top: 40%; animation-duration: 10s; animation-delay: -4s; }
+
+@keyframes pd-float-particle {
+  0% { transform: translateY(0) translateX(0); opacity: 0.1; }
+  25% { transform: translateY(-20px) translateX(10px); opacity: 0.2; }
+  50% { transform: translateY(-10px) translateX(-10px); opacity: 0.05; }
+  75% { transform: translateY(-30px) translateX(5px); opacity: 0.15; }
+  100% { transform: translateY(0) translateX(0); opacity: 0.1; }
+}
+
+/* ── Tabs ── */
+.pd-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 24px 40px 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pd-tab {
+  padding: 14px 28px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: -1px;
+}
+
+.pd-tab:hover {
+  color: var(--text-primary);
+}
+
+.pd-tab.active {
+  color: var(--domain-color, var(--primary));
+  border-bottom-color: var(--domain-color, var(--primary));
+}
+
+/* ── Body / Tab Content ── */
+.pd-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+
+.pd-tab-content {
+  animation: fadeIn 0.4s ease;
+}
+
+/* ── Overview Tab ── */
+.pd-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+.pd-info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px; /* Cards: 24px */
+  padding: 36px;
+  margin-bottom: 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.pd-info-card h3 {
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.pd-info-card p {
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.pd-price-card {
+  border-color: var(--primary);
+  background: var(--accent-glow) !important;
+}
+
+.pd-price {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.pd-meta-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px; /* Cards: 24px */
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-meta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pd-meta-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.pd-meta-label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.pd-meta-value {
+  font-size: 0.98rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pd-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: status-pulse 2s ease infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--primary); }
+  50% { box-shadow: 0 0 16px var(--primary); }
+}
+
+/* ── Team Constellation ── */
+.constellation-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.constellation-title {
+  font-size: 2.2rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.title-icon {
+  color: var(--primary);
+  font-size: 1.6rem;
+}
+
+.constellation-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: -16px 0 0;
+}
+
+.constellation-scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.orbit-svg {
+  pointer-events: none;
+}
+
+/* Central Planet */
+.constellation-planet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.planet-core {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--primary), var(--secondary));
+  box-shadow:
+    0 0 0 8px rgba(161, 143, 104, 0.08),
+    0 0 0 16px rgba(161, 143, 104, 0.04),
+    0 0 40px var(--accent-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  animation: planet-pulse 4s ease infinite;
+}
+
+@keyframes planet-pulse {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(161,143,104,0.08), 0 0 0 16px rgba(161,143,104,0.04), 0 0 40px var(--accent-glow); }
+  50% { box-shadow: 0 0 0 12px rgba(161,143,104,0.12), 0 0 0 24px rgba(161,143,104,0.06), 0 0 60px var(--primary); }
+}
+
+.planet-ring {
+  position: absolute;
+  width: 90px;
+  height: 20px;
+  border: 2px solid rgba(161, 143, 104, 0.2);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Member Satellites */
+.member-satellite {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.member-satellite:hover {
+  z-index: 20;
+}
+
+.member-satellite.hovered {
+  transform: scale(1.2);
+}
+
+.satellite-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--node-color);
+  box-shadow: 0 0 14px var(--node-glow), 0 0 4px var(--node-color);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.member-satellite.hovered .satellite-avatar {
+  box-shadow: 0 0 28px var(--node-glow), 0 0 8px var(--node-color);
+}
+
+.satellite-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--node-color);
+}
+
+/* Tooltip */
+.satellite-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 160px;
+  pointer-events: none;
+  backdrop-filter: blur(16px);
+  animation: tooltip-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  z-index: 30;
+}
+
+@keyframes tooltip-pop {
+  from { opacity: 0; transform: translateX(-50%) scale(0.8); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+.tooltip-role-bar {
+  height: 3px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+.tooltip-name {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 4px;
+}
+
+.tooltip-role {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.tooltip-level {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Constellation Legend */
+.constellation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  justify-content: center;
+  padding: 20px 40px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.legend-role {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+/* ── Team Member Cards ── */
+.pd-team-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+  margin-top: 48px;
+}
+
+.pd-team-member-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px; /* Cards: 24px */
+  padding: 28px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-team-member-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--member-color);
+  border-radius: 4px 0 0 4px;
+}
+
+.pd-team-member-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 20px var(--member-glow);
+  border-color: var(--member-color);
+}
+
+.ptm-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ptm-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--member-color);
+  box-shadow: 0 0 16px var(--member-glow);
+}
+
+.ptm-initials-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--member-color);
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid var(--member-color);
+  box-shadow: 0 0 16px var(--member-glow);
+}
+
+.ptm-role-badge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.ptm-info {
+  flex: 1;
+}
+
+.ptm-info h3 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.ptm-bio {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.ptm-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ptm-skill {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* ── Tech Stack Tab ── */
+.pd-tech-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.pd-tech-header h2 {
+  font-size: 2.2rem;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.pd-tech-header p {
+  color: var(--text-secondary);
+}
+
+.pd-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+}
+
+.pd-tech-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  cursor: default;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+}
+
+.pd-tech-item:hover {
+  transform: translateY(-8px);
+  border-color: var(--domain-color, var(--primary));
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15),
+    0 0 16px var(--accent-glow);
+}
+
+.tech-icon-wrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  color: var(--primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.pd-tech-item:hover .tech-icon-wrap {
+  background: var(--primary);
+  color: var(--btn-text);
+  border-color: var(--primary);
+}
+
+.tech-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .pd-hero {
+    padding: 60px 20px;
+  }
+
+  .pd-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-tabs {
+    padding: 24px 16px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+  }
+
+  .pd-tab {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .pd-body {
+    padding: 36px 16px 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .constellation-scene {
+    transform: scale(0.75);
+    margin: -45px 0;
+  }
+  
+  .pd-team-member-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+  
+  .pd-tech-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+  }
+}

@@ -1,0 +1,43 @@
+# Tooling config for the backend. Ruff handles both linting and formatting,
+# replacing the flake8 + isort + black stack with one dependency.
+#
+#   pip install ruff
+#   ruff check .        # lint
+#   ruff check . --fix  # lint and autofix
+#   ruff format .       # format
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["__pycache__", ".venv", "venv", "static"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes: undefined names, unused imports/variables
+    "I",    # isort: import ordering
+    "B",    # flake8-bugbear: likely bugs
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade: outdated syntax
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    # The database bootstrap and the app lifespan both catch broad exceptions
+    # on purpose, and explain why at the call site.
+    "B008",  # function call in argument default — this is how FastAPI Depends() works
+    "E501",  # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Re-exports for convenience, not dead imports.
+"app/repositories/__init__.py" = ["F401"]
+# Models are imported for their registration side effect.
+"app/main.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

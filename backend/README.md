@@ -50,25 +50,37 @@ This is the REST API backend built with:
 
 ```
 app/
-├── api/
-│   ├── routes/              # API endpoints
-│   │   ├── team.py
-│   │   ├── projects.py
-│   │   ├── contact.py
-│   │   └── leads.py
-│   └── __init__.py
-├── models/                  # SQLAlchemy ORM models
-├── schemas/                 # Pydantic validation
+├── main.py                  # App instance, middleware, SPA serving
+├── core/                    # Cross-cutting infrastructure
+│   ├── config.py            # Settings + production config guard
+│   ├── security.py          # JWT + admin credential verification
+│   ├── db.py                # Engine, session, schema bootstrap
+│   └── logging.py           # Logging configuration
+├── media/                   # Image handling
+│   ├── images.py            # Upload optimisation + cached serving
+│   └── encoding.py          # base64 -> bytes decoding
+├── routes/                  # API endpoints
+│   ├── team.py
+│   ├── projects.py
+│   ├── contact.py           # Client projects
+│   ├── leads.py
+│   ├── blog.py
+│   ├── auth.py              # Admin login
+│   └── __init__.py          # Combines routers under /api/v1
+├── repositories/            # Raw-SQL data access
 ├── services/                # Business logic
-├── config.py               # Configuration
-├── db.py                   # Database setup
-├── main.py                 # App initialization
-└── __init__.py
+├── models/                  # SQLAlchemy ORM models
+└── schemas/                 # Pydantic validation
 
-uploads/                    # Image uploads directory
-seed_data.py               # Sample data
-requirements.txt           # Dependencies
-.env.example               # Environment template
+Database/
+├── schemas.sql              # Table definitions (fresh installs)
+└── migration_alter_queries.sql  # Idempotent ALTERs (existing installs)
+
+uploads/                     # Static file mount
+seed.py                      # Sample data
+requirements.txt             # Dependencies
+pyproject.toml               # Ruff lint + format config
+.env.example                 # Environment template
 ```
 
 ## Database Models
@@ -212,7 +224,7 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 
 ### Create Sample Data
 ```bash
-python seed_data.py
+python seed.py
 ```
 
 ### Run Tests (optional, add pytest)
@@ -271,12 +283,29 @@ python -m uvicorn app.main:app --reload --port 8001
 
 ### Clean Architecture Layers
 
-1. **Routes** - HTTP endpoints (app/api/routes/)
-2. **Schemas** - Data validation (app/schemas/)
+1. **Routes** - HTTP endpoints (app/routes/)
+2. **Schemas** - Request/response validation (app/schemas/)
 3. **Services** - Business logic (app/services/)
-4. **Models** - Database ORM (app/models/)
-5. **Config** - Configuration (config.py)
-6. **DB** - Database connection (db.py)
+4. **Repositories** - Raw-SQL data access (app/repositories/)
+5. **Models** - SQLAlchemy ORM models (app/models/)
+6. **Core** - Config, security, DB, logging (app/core/)
+7. **Media** - Image optimisation and serving (app/media/)
+
+Dependencies point inward: routes depend on services, services on
+repositories, and everything may depend on `core`. Nothing in `core` imports a
+feature layer.
+
+## Code Quality
+
+Linting and formatting are handled by [Ruff](https://docs.astral.sh/ruff/),
+configured in `pyproject.toml`:
+
+```bash
+pip install ruff
+ruff check .          # lint
+ruff check . --fix    # lint and autofix
+ruff format .         # format
+```
 
 This separation makes the code:
 - Easy to test
