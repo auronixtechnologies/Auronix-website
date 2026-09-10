@@ -1,30 +1,38 @@
 """
 Authentication utilities for the admin panel.
 Handles JWT token creation/verification and credential validation.
+
+Credentials come from the environment (ADMIN_EMAIL / ADMIN_PASSWORD_HASH).
+Generate a hash with:
+    python -c "from passlib.context import CryptContext; \
+print(CryptContext(schemes=['bcrypt']).hash('your-password'))"
 """
 
-import os
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+from app.config import config
+
 # ──────────────────────────────────────────────
 # Constants
 # ──────────────────────────────────────────────
 
-ADMIN_EMAIL = "auronixtechnologies@gmail.com"
-ADMIN_PASSWORD = "Aura@2003!"
-
-# Use the SECRET_KEY from env, or a sensible default for dev
-JWT_SECRET = os.getenv("SECRET_KEY", "auronix-super-secret-jwt-2024-do-not-expose")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# A valid bcrypt hash of a random value. Verified against when the submitted
+# email is unknown, so that a wrong email costs the same time as a wrong
+# password and cannot be distinguished by an attacker.
+_DUMMY_HASH = pwd_context.hash(secrets.token_urlsafe(32))
 
 # Bearer token extractor for FastAPI dependency injection
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -35,8 +43,24 @@ bearer_scheme = HTTPBearer(auto_error=False)
 # ──────────────────────────────────────────────
 
 def verify_admin_credentials(email: str, password: str) -> bool:
-    """Check if the supplied email and password match the admin credentials."""
-    return email.lower().strip() == ADMIN_EMAIL.lower() and password == ADMIN_PASSWORD
+    """
+    Check the supplied email and password against the configured admin
+    credentials. Runs in constant time with respect to which field was wrong.
+    """
+    expected_hash = config.ADMIN_PASSWORD_HASH
+    if not expected_hash:
+        # No credentials configured — login is disabled rather than open.
+        pwd_context.verify(password, _DUMMY_HASH)
+        return False
+
+    email_ok = secrets.compare_digest(
+        email.strip().lower(), config.ADMIN_EMAIL.strip().lower()
+    )
+    # Always run a verification so the response time does not reveal whether
+    # the email matched.
+    password_ok = pwd_context.verify(password, expected_hash if email_ok else _DUMMY_HASH)
+
+    return email_ok and password_ok
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -46,22 +70,27 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expires_delta if expires_delta else timedelta(hours=JWT_EXPIRE_HOURS)
     )
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def decode_token(token: str) -> dict:
     """Decode and verify a JWT token. Raises HTTPException on failure."""
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        if payload.get("sub") != "admin":
-            raise HTTPException(status_code=401, detail="Not authorized")
-        return payload
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[JWT_ALGORITHM])
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    if payload.get("sub") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authorized",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
 
 
 # ──────────────────────────────────────────────

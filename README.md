@@ -195,12 +195,30 @@ The admin dashboard is a secure area for managing team members, projects, and le
 - **Admin Login Page**: `http://localhost:5173/auronix-admin`
 - **Admin Dashboard**: `http://localhost:5173/auronix-admin/dashboard` *(Requires successful login)*
 
-### Default Credentials
-- **Admin Email**: `auronixtechnologies@gmail.com`
-- **Admin Password**: `Aura@2003!`
+### Credentials
+
+Admin credentials are read from the environment — they are not stored in the
+codebase. Set these in `backend/.env`:
+
+```bash
+ADMIN_EMAIL=you@example.com
+ADMIN_PASSWORD_HASH=<bcrypt hash>
+```
+
+Generate the hash (never store the plaintext password):
+
+```bash
+python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('your-password'))"
+```
+
+If `ADMIN_PASSWORD_HASH` is unset, admin login is disabled rather than left
+open. When `ENVIRONMENT=production`, the app refuses to start unless
+`SECRET_KEY` and `ADMIN_PASSWORD_HASH` are set, `DEBUG` is `False`, and
+`ALLOWED_ORIGINS` is not `*`.
 
 > [!WARNING]
-> These credentials are set in the backend environment/configurations. Ensure you update them or secure your production deployment with actual environment variables or database-managed admins before going public.
+> The credentials previously hardcoded here and in `app/auth.py` remain in git
+> history. Treat them as compromised and choose a new password.
 
 ## 📚 API Documentation
 

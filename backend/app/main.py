@@ -17,6 +17,9 @@ import traceback
 from app.config import config
 from app.db import init_db
 from app.api import api_router
+
+# Refuse to boot a production deployment that still holds development secrets.
+config.validate()
 # Import models so they're registered with Base before init_db() is called
 from app.models import TeamMember, Project, ClientProject, Lead, BlogPost  # noqa: F401
 
@@ -33,20 +36,32 @@ app = FastAPI(
 async def global_exception_handler(request: Request, exc: Exception):
     """
     Global exception handler to capture all unhandled errors.
-    Returns a JSON response and ensures CORS headers are attached.
+
+    Starlette runs ServerErrorMiddleware *outside* CORSMiddleware, so responses
+    produced here never pass through the CORS layer. Without the headers below
+    the browser reports an opaque CORS failure and the client never sees the
+    status or body. They are therefore attached by hand.
     """
     error_detail = str(exc)
-    if config.DEBUG:
-        print(f"ERROR: {error_detail}")
-        traceback.print_exc()
-        
+    # Always log server-side; only expose the text to the client in debug.
+    print(f"ERROR: {error_detail}")
+    traceback.print_exc()
+
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin and origin in config.ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Vary"] = "Origin"
+
     return JSONResponse(
         status_code=500,
         content={
             "detail": "Internal Server Error",
             "message": error_detail if config.DEBUG else "A database or server error occurred.",
             "path": request.url.path
-        }
+        },
+        headers=headers,
     )
 
 # ==================== MIDDLEWARE ====================

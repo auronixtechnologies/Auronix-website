@@ -5,6 +5,58 @@ import { blogAPI } from '../services/api';
 import Loader from '../components/Loader';
 import './pages.css';
 
+/**
+ * Escape every HTML-significant character in the raw post body.
+ *
+ * This runs BEFORE the markdown substitutions below, so any tag an author (or
+ * an attacker) writes into a post becomes inert text rather than live markup.
+ * The only HTML in the output is the tags this function itself emits.
+ *
+ * Consequence: literal HTML in a post is displayed, not rendered. If you later
+ * want authors to embed real HTML, swap this for DOMPurify.sanitize() instead
+ * of removing the escaping.
+ */
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderPostBody(content) {
+  if (!content) return '';
+
+  // Pull fenced code blocks out first so their contents are never touched by
+  // the inline rules below, then put them back at the end.
+  //
+  // The sentinel is randomised per render so an author cannot type the
+  // placeholder text into a post and have it substituted for a code block.
+  const sentinel = `CODEBLOCK${Math.random().toString(36).slice(2, 12)}`;
+  const codeBlocks = [];
+  const withPlaceholders = content.replace(
+    /```[\w]*\n?([\s\S]*?)```/g,
+    (_match, code) => {
+      codeBlocks.push(code);
+      return `${sentinel}${codeBlocks.length - 1}${sentinel}`;
+    }
+  );
+
+  const html = escapeHtml(withPlaceholders)
+    .replace(/^#{3} (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^#{2} (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^#{1} (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br/>');
+
+  return html.replace(
+    new RegExp(`${sentinel}(\\d+)${sentinel}`, 'g'),
+    (_match, i) => `<pre><code>${escapeHtml(codeBlocks[Number(i)])}</code></pre>`
+  );
+}
+
 export default function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
@@ -61,16 +113,7 @@ export default function BlogPost() {
   const twitterHref = `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`;
   const linkedinHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
 
-  const bodyHtml = post.content
-    ? post.content
-        .replace(/```[\w]*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-        .replace(/^#{3} (.+)$/gm, '<h3>$1</h3>')
-        .replace(/^#{2} (.+)$/gm, '<h2>$1</h2>')
-        .replace(/^#{1} (.+)$/gm, '<h1>$1</h1>')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/\n/g, '<br/>')
-    : '';
+  const bodyHtml = renderPostBody(post.content);
 
   return (
     <motion.div

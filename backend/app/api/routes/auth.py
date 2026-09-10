@@ -3,9 +3,9 @@ Auth routes — login endpoint for the admin panel.
 POST /api/v1/auth/login  →  returns { access_token, token_type }
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from app.auth import verify_admin_credentials, create_access_token
+from app.auth import verify_admin_credentials, create_access_token, require_admin
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,10 +37,11 @@ def admin_login(body: LoginRequest):
 
 
 @router.get("/verify", tags=["auth"])
-def verify_token_endpoint(token: str):
+def verify_token_endpoint(claims: dict = Depends(require_admin)):
     """
     Lightweight token verification endpoint (used by the frontend health-check).
+
+    Reads the token from the Authorization header. It was previously a query
+    parameter, which wrote live tokens into access logs and browser history.
     """
-    from app.auth import decode_token
-    payload = decode_token(token)
-    return {"valid": True, "sub": payload.get("sub")}
+    return {"valid": True, "sub": claims.get("sub")}

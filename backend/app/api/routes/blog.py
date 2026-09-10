@@ -5,6 +5,7 @@ from typing import List
 from app.db import get_db
 from app.models import BlogPost
 from app.schemas import BlogPostResponse, BlogPostCreate, BlogPostUpdate, PaginationParams
+from app.auth import require_admin
 
 router = APIRouter(prefix="/blog", tags=["Blog Posts"])
 
@@ -34,8 +35,16 @@ def get_blog_post_by_slug(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=BlogPostResponse, status_code=status.HTTP_201_CREATED)
-def create_blog_post(post_in: BlogPostCreate, db: Session = Depends(get_db)):
-    """Create a new blog post."""
+def create_blog_post(
+    post_in: BlogPostCreate,
+    db: Session = Depends(get_db),
+    _=Depends(require_admin),
+):
+    """
+    Create a new blog post.
+
+    ADMIN ENDPOINT: Requires valid Bearer token.
+    """
     existing = db.query(BlogPost).filter(BlogPost.slug == post_in.slug).first()
     if existing:
         raise HTTPException(status_code=400, detail="Slug already exists")
@@ -48,8 +57,17 @@ def create_blog_post(post_in: BlogPostCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=BlogPostResponse)
-def update_blog_post(id: int, post_in: BlogPostUpdate, db: Session = Depends(get_db)):
-    """Update a blog post."""
+def update_blog_post(
+    id: int,
+    post_in: BlogPostUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_admin),
+):
+    """
+    Update a blog post.
+
+    ADMIN ENDPOINT: Requires valid Bearer token.
+    """
     post = db.query(BlogPost).filter(BlogPost.id == id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
@@ -69,8 +87,16 @@ def update_blog_post(id: int, post_in: BlogPostUpdate, db: Session = Depends(get
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_blog_post(id: int, db: Session = Depends(get_db)):
-    """Delete a blog post."""
+def delete_blog_post(
+    id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_admin),
+):
+    """
+    Delete a blog post.
+
+    ADMIN ENDPOINT: Requires valid Bearer token.
+    """
     post = db.query(BlogPost).filter(BlogPost.id == id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
