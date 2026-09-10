@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
+    -- Read and written by ProjectRepository. Also added by
+    -- migration_alter_queries.sql, which covers databases created before this
+    -- column existed; both are idempotent so declaring it here is safe.
     category VARCHAR(100) NOT NULL DEFAULT 'Student Projects',
     domain VARCHAR(100) NOT NULL,
     tech_stack JSONB NOT NULL,
@@ -31,9 +34,13 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ON DELETE CASCADE is required: deleting a project or a team member must
+-- clear its membership rows, otherwise the delete is blocked by this foreign
+-- key. The long-lived development database had CASCADE applied by hand, so
+-- the omission here only ever showed up on a freshly created database.
 CREATE TABLE IF NOT EXISTS project_members (
-    project_id INTEGER REFERENCES projects(id),
-    team_member_id INTEGER REFERENCES team_members(id),
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    team_member_id INTEGER REFERENCES team_members(id) ON DELETE CASCADE,
     PRIMARY KEY (project_id, team_member_id)
 );
 
