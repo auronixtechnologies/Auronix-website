@@ -8,7 +8,9 @@ supplied via the environment — see validate() below.
 """
 
 import os
+import re
 import sys
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file if it exists
@@ -18,6 +20,18 @@ load_dotenv()
 # a deployment that forgot to override them.
 DEV_SECRET_KEY = "dev-only-secret-key-do-not-use-in-production"
 DEV_DB_PASSWORD = "Auronix2602"
+
+# A bcrypt hash is exactly 60 characters: $2<variant>$<cost>$<22 salt + 31 digest>.
+BCRYPT_HASH_RE = re.compile(r"^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$")
+
+# Docker Compose expands "$" in env files, so an unescaped bcrypt hash arrives
+# truncated ("$2b$12$abc..." becomes "$2b$12"). The failure is otherwise
+# silent: the app starts and every login attempt simply fails.
+MALFORMED_HASH_HINT = (
+    "ADMIN_PASSWORD_HASH is not a valid bcrypt hash. If you set it through "
+    "Docker Compose, double every '$' in the value ($$2b$$12$$...) — Compose "
+    "expands unescaped '$' and silently truncates the hash."
+)
 
 
 class Config:
@@ -61,7 +75,7 @@ class Config:
             f"?sslmode={DB_SSLMODE}"
         )
 
-    # Admin credentials (see app/auth.py)
+    # Admin credentials (see app/core/security.py)
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@auronix.local")
     ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", "")
 
@@ -89,11 +103,21 @@ class Config:
         Refuse to start a production deployment that is still using development
         secrets. Called from app.main at import time.
         """
+        # Logging is not configured yet when this runs (and app.core.logging
+        # imports this module), so warnings go straight to stderr.
         if not cls.IS_PRODUCTION:
             if cls.SECRET_KEY == DEV_SECRET_KEY:
-                print("WARNING: using the development SECRET_KEY. Set SECRET_KEY before deploying.")
+                print(
+                    "WARNING: using the development SECRET_KEY. Set SECRET_KEY before deploying.",
+                    file=sys.stderr,
+                )
             if not cls.ADMIN_PASSWORD_HASH:
-                print("WARNING: ADMIN_PASSWORD_HASH is not set — admin login is disabled.")
+                print(
+                    "WARNING: ADMIN_PASSWORD_HASH is not set - admin login is disabled.",
+                    file=sys.stderr,
+                )
+            elif not BCRYPT_HASH_RE.match(cls.ADMIN_PASSWORD_HASH):
+                print(f"WARNING: {MALFORMED_HASH_HINT}", file=sys.stderr)
             return
 
         problems = []
@@ -103,6 +127,8 @@ class Config:
             problems.append("SECRET_KEY must be at least 32 characters")
         if not cls.ADMIN_PASSWORD_HASH:
             problems.append("ADMIN_PASSWORD_HASH is not set")
+        elif not BCRYPT_HASH_RE.match(cls.ADMIN_PASSWORD_HASH):
+            problems.append(MALFORMED_HASH_HINT)
         if not os.getenv("DATABASE_URL") and cls.DB_PASSWORD == DEV_DB_PASSWORD:
             problems.append("DB_PASSWORD is still the development default")
         if cls.DEBUG:

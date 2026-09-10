@@ -11,7 +11,7 @@ This is a complete full-stack web application featuring:
 - **Clean Architecture** following best practices
 - **Modular Structure** for scalability and maintainability
 - **Production-Ready** code with proper error handling and validation
-- **Local File Storage** for images/uploads
+- **Images stored in Postgres**, optimised on upload and served from a cached endpoint
 - **Admin Endpoints** for managing team members, projects, and leads
 
 ## 🎯 Features
@@ -28,67 +28,61 @@ This is a complete full-stack web application featuring:
 - **Backend**: FastAPI + SQLAlchemy ORM
 - **Database**: PostgreSQL
 - **Frontend**: React 18 + Vite + React Router
-- **File Storage**: Local file uploads with path storage in DB
+- **Images**: Optimised to WebP on upload, stored as BYTEA, served with long-lived caching
 - **Styling**: Modern CSS with responsive design
 
 ## 📁 Project Structure
 
 ```
 Auronix Tech/
-├── backend/                          # FastAPI application
+├── backend/                            # FastAPI application
 │   ├── app/
-│   │   ├── api/
-│   │   │   ├── routes/
-│   │   │   │   ├── team.py          # Team endpoints
-│   │   │   │   ├── projects.py      # Portfolio project endpoints
-│   │   │   │   ├── contact.py       # Client projects endpoints
-│   │   │   │   └── leads.py         # Contact/leads endpoints
-│   │   │   └── __init__.py
-│   │   ├── models/                  # SQLAlchemy ORM models
-│   │   │   └── __init__.py
-│   │   ├── schemas/                 # Pydantic validation schemas
-│   │   │   └── __init__.py
-│   │   ├── services/                # Business logic layer
-│   │   │   └── __init__.py
-│   │   ├── main.py                  # FastAPI app initialization
-│   │   ├── db.py                    # Database connection
-│   │   ├── config.py                # Configuration management
-│   │   └── __init__.py
-│   ├── uploads/                     # Image uploads directory
-│   ├── seed_data.py                 # Sample data script
-│   ├── requirements.txt             # Python dependencies
-│   ├── .env.example                 # Environment variables template
-│   └── README.md                    # Backend documentation
+│   │   ├── main.py                     # App instance, middleware, SPA serving
+│   │   ├── core/                       # Cross-cutting infrastructure
+│   │   │   ├── config.py               # Settings + production config guard
+│   │   │   ├── security.py             # JWT + admin credential verification
+│   │   │   └── db.py                   # Engine, session, schema bootstrap
+│   │   ├── media/                      # Image handling
+│   │   │   ├── images.py               # Upload optimisation + cached serving
+│   │   │   └── encoding.py             # base64 <-> bytes helpers
+│   │   ├── routes/                     # HTTP endpoints
+│   │   │   ├── team.py                 # Team endpoints
+│   │   │   ├── projects.py             # Portfolio project endpoints
+│   │   │   ├── contact.py              # Client project endpoints
+│   │   │   ├── leads.py                # Contact/lead endpoints
+│   │   │   ├── blog.py                 # Blog endpoints
+│   │   │   ├── auth.py                 # Admin login
+│   │   │   └── __init__.py             # Combines routers under /api/v1
+│   │   ├── services/                   # Business logic layer
+│   │   ├── repositories/               # Raw-SQL repositories
+│   │   ├── models/                     # SQLAlchemy ORM models
+│   │   └── schemas/                    # Pydantic request/response schemas
+│   ├── Database/
+│   │   ├── schemas.sql                 # Table definitions (fresh installs)
+│   │   └── migration_alter_queries.sql # Idempotent ALTERs (existing installs)
+│   ├── uploads/                        # Static file mount
+│   ├── seed.py                         # Sample data script
+│   ├── requirements.txt                # Python dependencies
+│   └── .env.example                    # Environment variable template
 │
-├── frontend/                        # React application
+├── frontend/                           # React application
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navigation.jsx
-│   │   │   ├── Navigation.css
-│   │   │   ├── Footer.jsx
-│   │   │   └── Footer.css
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── About.jsx
-│   │   │   ├── Team.jsx
-│   │   │   ├── Portfolio.jsx
-│   │   │   ├── Contact.jsx
-│   │   │   └── pages.css
+│   │   ├── components/                 # Navigation, Footer, Loader, ...
+│   │   ├── pages/                      # Home, Portfolio, Team, Blog, admin/, ...
 │   │   ├── services/
-│   │   │   └── api.js              # API client
+│   │   │   ├── api.js                  # Public API client + imageUrl()
+│   │   │   └── adminApi.js             # Authenticated admin client
 │   │   ├── App.jsx
-│   │   ├── App.css
 │   │   └── main.jsx
 │   ├── public/
-│   │   └── index.html
 │   ├── package.json
-│   ├── vite.config.js
-│   ├── .env.example
-│   └── README.md                   # Frontend documentation
+│   └── vite.config.js
 │
-━ .gitignore
-└── README.md                        # This file
-
+├── Dockerfile                          # Multi-stage build (frontend + API)
+├── .dockerignore
+├── render.yaml                         # Render blueprint
+├── docker-compose.yml                  # Local Postgres + pgAdmin
+└── README.md                           # This file
 ```
 
 ## 🚀 Quick Start
@@ -155,7 +149,7 @@ Auronix Tech/
 
 7. **Seed sample data** (optional, in a new terminal)
    ```bash
-   python seed_data.py
+   python seed.py
    ```
 
 ### Frontend Setup
@@ -208,7 +202,7 @@ ADMIN_PASSWORD_HASH=<bcrypt hash>
 Generate the hash (never store the plaintext password):
 
 ```bash
-python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('your-password'))"
+python -c "import bcrypt; print(bcrypt.hashpw(b'your-password', bcrypt.gensalt()).decode())"
 ```
 
 If `ADMIN_PASSWORD_HASH` is unset, admin login is disabled rather than left
@@ -217,7 +211,7 @@ open. When `ENVIRONMENT=production`, the app refuses to start unless
 `ALLOWED_ORIGINS` is not `*`.
 
 > [!WARNING]
-> The credentials previously hardcoded here and in `app/auth.py` remain in git
+> The credentials previously hardcoded here and in `app/core/security.py` remain in git
 > history. Treat them as compromised and choose a new password.
 
 ## 📚 API Documentation
@@ -341,24 +335,73 @@ http://localhost:8000/api/v1
 **Frontend (.env)**
 - `VITE_API_URL` - Backend API URL
 
-## 📦 Building for Production
+## 📦 Deployment
 
-### Backend
+The whole application ships as one Docker image: the React app is built and
+copied next to the API, which serves both. Nothing needs a separate frontend
+host, and the browser talks to a single origin.
+
+### Full stack with Docker Compose (recommended)
+
+API, built frontend and PostgreSQL, self-contained. This is the same database
+setup as local development, just containerised.
+
 ```bash
-# Run with production settings
-# Edit .env with ENVIRONMENT=production, DEBUG=False
-# Use a proper ASGI server like gunicorn+uvicorn
-
-pip install gunicorn
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+cp .env.docker.example .env.docker
+#   1. SECRET_KEY        python -c "import secrets; print(secrets.token_urlsafe(48))"
+#   2. ADMIN_EMAIL
+#   3. ADMIN_PASSWORD_HASH — note the "$" doubling explained in the file
+docker compose up -d --build
 ```
 
-### Frontend
-```bash
-npm run build
+The site and API are then on <http://localhost:8000>.
 
-# Deploy the dist/ folder to your hosting service
+| Command | Effect |
+|---|---|
+| `docker compose up -d --build` | build and start the stack |
+| `docker compose logs -f app` | follow application logs |
+| `docker compose down` | stop; **database is kept** |
+| `docker compose down -v` | stop and **delete the database volume** |
+| `docker compose --profile tools up -d` | also start pgAdmin on :5050 |
+
+Database files live in the named volume `auronix_postgres_data`. The app
+reaches Postgres at `postgres:5432` on the compose network; the published
+`5436` is only there for psql or a GUI client and can be removed.
+
+Override host ports with a plain `.env` beside the compose file:
+
+```bash
+APP_PORT=8080
+POSTGRES_PORT=5436
 ```
+
+### Where this can run
+
+Anywhere Docker Compose runs and the disk persists — a VPS, a self-hosted
+box, or your own machine. The volume survives restarts and redeploys.
+
+**Not Render.** A Render web service runs the Dockerfile alone; it has no
+concept of a compose file, so the Postgres service would simply not exist.
+Its container filesystem is also ephemeral, so a database running *inside*
+the app container would be wiped on every deploy, restart, and free-tier idle
+spin-down. To use Render, keep the database somewhere else and pass its
+`DATABASE_URL` in — see `render.yaml`.
+
+### Running the image on its own
+
+Useful when the database already lives elsewhere:
+
+```bash
+docker build -t auronix .
+docker run --rm -p 8000:8000   -e DATABASE_URL="postgresql://user:pass@host:5432/dbname?sslmode=require"   -e ENVIRONMENT=production   -e DEBUG=false   -e SECRET_KEY="..."   -e ADMIN_EMAIL="you@example.com"   -e ADMIN_PASSWORD_HASH='$2b$12$...'   auronix
+```
+
+Pass the hash unescaped here — the `$` doubling is a Compose quirk and does
+not apply to `docker run` or to a platform's environment variables.
+
+The app validates its configuration on startup and refuses to boot a
+production instance with a development `SECRET_KEY`, `DEBUG` on, a missing or
+malformed admin hash, or wildcard CORS.
 
 ## 🔐 Security Considerations
 

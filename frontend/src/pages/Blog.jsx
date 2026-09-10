@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Tag, ArrowRight } from 'lucide-react';
-import { blogAPI } from '../services/api';
+import { blogAPI, imageUrl } from '../services/api';
 import './pages.css';
 import Loader from '../components/Loader';
 
@@ -69,10 +69,10 @@ export default function Blog() {
               transition={{ duration: 0.5 }}
             >
               <Link to={`/blog/${featuredPost.slug}`} className="featured-card-inner">
-                {featuredPost.image_data && featuredPost.image_type ? (
+                {featuredPost.has_image ? (
                   <div className="featured-img-wrapper">
                     <img
-                      src={`data:${featuredPost.image_type};base64,${featuredPost.image_data}`}
+                      src={imageUrl('blog', featuredPost.slug, featuredPost.updated_at)}
                       alt={featuredPost.title}
                       className="featured-img"
                     />
@@ -122,10 +122,10 @@ export default function Blog() {
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                 >
                   <Link to={`/blog/${post.slug}`} className="grid-card-inner">
-                    {post.image_data && post.image_type ? (
+                    {post.has_image ? (
                       <div className="grid-img-wrapper">
                         <img
-                          src={`data:${post.image_type};base64,${post.image_data}`}
+                          src={imageUrl('blog', post.slug, post.updated_at)}
                           alt={post.title}
                           className="grid-img"
                         />

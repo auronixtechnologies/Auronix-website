@@ -3,18 +3,19 @@ API routes for team members.
 Endpoints: GET /team, GET /team/{id}, POST /team (admin), PUT /team/{id}, DELETE /team/{id}
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import List
-from app.db import get_db
-from app.schemas import TeamMemberCreate, TeamMemberUpdate, TeamMemberResponse
+
+from app.core.db import get_db
+from app.core.security import require_admin
+from app.media.images import build_image_response
+from app.schemas import TeamMemberCreate, TeamMemberResponse, TeamMemberUpdate
 from app.services import TeamMemberService
-from app.auth import require_admin
 
 router = APIRouter(prefix="/team", tags=["team"])
 
 
-@router.get("", response_model=List[TeamMemberResponse])
+@router.get("", response_model=list[TeamMemberResponse])
 def get_team_members(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
@@ -22,12 +23,19 @@ def get_team_members(
 ):
     """
     Get all team members with pagination.
-    
+
     Query Parameters:
     - skip: Number of records to skip (default: 0)
     - limit: Number of records to return (default: 10, max: 100)
     """
     return TeamMemberService.get_team_members(db, skip=skip, limit=limit)
+
+
+@router.get("/{member_id}/image")
+def get_team_member_image(member_id: int, request: Request, db: Session = Depends(get_db)):
+    """Serve a team member's profile image. See get_project_image."""
+    record = TeamMemberService.get_team_member_image(db, member_id)
+    return build_image_response(record, "profile_image_data", "profile_image_type", request)
 
 
 @router.get("/{member_id}", response_model=TeamMemberResponse)

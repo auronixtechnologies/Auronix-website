@@ -4,7 +4,7 @@
  * domain-colored badges, inbox-style leads, improved UX.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   isLoggedIn, clearToken,
@@ -14,10 +14,10 @@ import './Admin.css';
 import {
   Folder, Users, Handshake, Mail, Star, AlertTriangle,
   CheckCircle, XCircle, LogOut, Globe, RefreshCw, Clock,
-  Plus, Edit2, Trash2, X, Menu, Hexagon, ExternalLink,
-  Copy, TrendingUp,
+  Plus, Edit2, Trash2, X, Menu, ExternalLink, Copy,
 } from 'lucide-react';
 import Loader from '../../components/Loader';
+import { imageUrl } from '../../services/api';
 
 // ── Utilities ──────────────────────────────────────────────────
 const imageToBase64 = (file) =>
@@ -143,7 +143,7 @@ function StatsRow({ counts }) {
 // PROJECTS TAB
 // ═══════════════════════════════════════════════════════════════
 const BLANK_PROJECT = {
-  title: '', description: '', domain: 'Web',
+  title: '', description: '', category: 'Student Projects', domain: 'Web',
   tech_stack: '', github_link: '', demo_link: '',
   price: '', is_featured: false, created_by: 1, team_member_ids: [],
   project_image_data: '', project_image_type: '',
@@ -257,6 +257,7 @@ function ProjectsTab({ showToast, onCountChange }) {
             <thead>
               <tr>
                 <th>Title</th>
+                <th>Category</th>
                 <th>Domain</th>
                 <th>Tech Stack</th>
                 <th>Price</th>
@@ -268,6 +269,11 @@ function ProjectsTab({ showToast, onCountChange }) {
               {projects.map((p) => (
                 <tr key={p.id}>
                   <td><strong>{p.title}</strong></td>
+                  <td>
+                    <span className="ad-badge" style={{ background: 'rgba(203, 161, 53, 0.12)', color: '#cba135', border: '1px solid rgba(203, 161, 53, 0.25)' }}>
+                      {p.category || 'Student Projects'}
+                    </span>
+                  </td>
                   <td>
                     <span className={`ad-badge ${getDomainClass(p.domain)}`}>{p.domain}</span>
                   </td>
@@ -314,6 +320,14 @@ function ProjectsTab({ showToast, onCountChange }) {
                 <div className="ad-field">
                   <label>Title *</label>
                   <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Project name" />
+                </div>
+                <div className="ad-field">
+                  <label>Category *</label>
+                  <select value={form.category || 'Student Projects'} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                    {['Client Projects', 'Student Projects', "Auronix's Arsenal", 'Special Occasions'].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="ad-field">
                   <label>Domain *</label>
@@ -385,10 +399,15 @@ function ProjectsTab({ showToast, onCountChange }) {
                 <div className="ad-field ad-field-full">
                   <label>Project Image</label>
                   <div className="ad-image-upload-container">
-                    {form.project_image_data && (
+                    {(form.project_image_data || form.has_image) && (
                       <div className="ad-image-preview">
-                        <img src={`data:${form.project_image_type};base64,${form.project_image_data}`} alt="Preview" />
-                        <button type="button" className="ad-image-clear" onClick={() => setForm({ ...form, project_image_data: '', project_image_type: '' })}>
+                        <img
+                          src={form.project_image_data
+                            ? `data:${form.project_image_type};base64,${form.project_image_data}`
+                            : imageUrl('projects', modal?.id, form.updated_at)}
+                          alt="Preview"
+                        />
+                        <button type="button" className="ad-image-clear" onClick={() => setForm({ ...form, project_image_data: '', project_image_type: '', has_image: false })}>
                           Remove Image
                         </button>
                       </div>
@@ -519,8 +538,8 @@ function TeamTab({ showToast, onCountChange }) {
                 <div className="ad-team-card-accent" />
                 <div className="ad-team-card-top">
                   <div className="ad-team-avatar-wrap">
-                    {m.profile_image_data && m.profile_image_type
-                      ? <img src={`data:${m.profile_image_type};base64,${m.profile_image_data}`} alt={m.name} className="ad-team-avatar-img" />
+                    {m.has_image
+                      ? <img src={imageUrl('team', m.id, m.updated_at)} alt={m.name} className="ad-team-avatar-img" />
                       : <div className="ad-team-avatar-initials">{initials}</div>}
                   </div>
                   <div className="ad-team-card-meta">
@@ -602,10 +621,15 @@ function TeamTab({ showToast, onCountChange }) {
                 <div className="ad-field ad-field-full">
                   <label>Profile Image</label>
                   <div className="ad-image-upload-container">
-                    {form.profile_image_data && (
+                    {(form.profile_image_data || form.has_image) && (
                       <div className="ad-image-preview">
-                        <img src={`data:${form.profile_image_type};base64,${form.profile_image_data}`} alt="Preview" />
-                        <button type="button" className="ad-image-clear" onClick={() => setForm({ ...form, profile_image_data: '', profile_image_type: '' })}>
+                        <img
+                          src={form.profile_image_data
+                            ? `data:${form.profile_image_type};base64,${form.profile_image_data}`
+                            : imageUrl('team', modal?.id, form.updated_at)}
+                          alt="Preview"
+                        />
+                        <button type="button" className="ad-image-clear" onClick={() => setForm({ ...form, profile_image_data: '', profile_image_type: '', has_image: false })}>
                           Remove Image
                         </button>
                       </div>

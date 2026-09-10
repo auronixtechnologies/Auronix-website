@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { teamAPI } from '../services/api';
+import { teamAPI, imageUrl } from '../services/api';
 import './pages.css';
 import Loader from '../components/Loader';
 
@@ -74,9 +74,9 @@ export default function Team() {
           {/* Previous Card Preview (Left Side) */}
           {members.length > 1 && (
             <div className="side-card-preview left-preview" onClick={handlePrev}>
-              {prevMember.profile_image_data && prevMember.profile_image_type ? (
+              {prevMember.has_image ? (
                 <img
-                  src={`data:${prevMember.profile_image_type};base64,${prevMember.profile_image_data}`}
+                  src={imageUrl('team', prevMember.id, prevMember.updated_at)}
                   alt={prevMember.name}
                   className="side-avatar"
                 />
@@ -113,9 +113,9 @@ export default function Team() {
               >
                 {/* Header Profile section */}
                 <div className="team-card-header">
-                  {member.profile_image_data && member.profile_image_type ? (
+                  {member.has_image ? (
                     <img
-                      src={`data:${member.profile_image_type};base64,${member.profile_image_data}`}
+                      src={imageUrl('team', member.id, member.updated_at)}
                       alt={member.name}
                       className="member-avatar"
                     />
@@ -215,9 +215,9 @@ export default function Team() {
           {/* Next Card Preview (Right Side) */}
           {members.length > 1 && (
             <div className="side-card-preview right-preview" onClick={handleNext}>
-              {nextMember.profile_image_data && nextMember.profile_image_type ? (
+              {nextMember.has_image ? (
                 <img
-                  src={`data:${nextMember.profile_image_type};base64,${nextMember.profile_image_data}`}
+                  src={imageUrl('team', nextMember.id, nextMember.updated_at)}
                   alt={nextMember.name}
                   className="side-avatar"
                 />

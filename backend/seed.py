@@ -1,14 +1,15 @@
-import sys
 import os
-import json
+import sys
 from datetime import datetime
 
 # Add the parent/app directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.db import SessionLocal, init_db
-from app.models import TeamMember, Project, ClientProject, BlogPost, Lead
 from sqlalchemy import text
+
+from app.core.db import SessionLocal, init_db
+from app.models import BlogPost, ClientProject, Project, TeamMember
+
 
 def seed_database():
     print("Initializing database schema...")
@@ -36,28 +37,56 @@ def seed_database():
             name="Elena Rostova",
             role="Lead AI & LLM Engineer",
             bio="Elena specializes in NLP, large language models, and multi-agent systems. She previously built generative AI pipelines for major tech companies and holds an MS in Computer Science.",
-            skills=["Python", "PyTorch", "LangChain", "OpenAI", "FastAPI", "Vector Databases", "LlamaIndex", "Hugging Face"],
+            skills=[
+                "Python",
+                "PyTorch",
+                "LangChain",
+                "OpenAI",
+                "FastAPI",
+                "Vector Databases",
+                "LlamaIndex",
+                "Hugging Face",
+            ],
             linkedin_url="https://linkedin.com/in/elena-rostova-demo",
             portfolio_url="https://github.com/elena-rostova-demo",
-            experience_level="lead"
+            experience_level="lead",
         )
         alex = TeamMember(
             name="Alex Mercer",
             role="Senior Full Stack Developer",
             bio="Alex is a full-stack engineer passionate about responsive designs and performant backend architectures. He is an expert in React, Node.js, FastAPI, and Kubernetes.",
-            skills=["React", "TypeScript", "FastAPI", "PostgreSQL", "Docker", "AWS", "CI/CD", "Next.js", "Kubernetes"],
+            skills=[
+                "React",
+                "TypeScript",
+                "FastAPI",
+                "PostgreSQL",
+                "Docker",
+                "AWS",
+                "CI/CD",
+                "Next.js",
+                "Kubernetes",
+            ],
             linkedin_url="https://linkedin.com/in/alex-mercer-demo",
             portfolio_url="https://alexmercer-demo.dev",
-            experience_level="senior"
+            experience_level="senior",
         )
         sarah = TeamMember(
             name="Sarah Chen",
             role="Lead UI/UX & Frontend Designer",
             bio="Sarah bridges the gap between design and technology. She has over 6 years of experience designing beautiful, interactive web and mobile interfaces that focus on accessibility and motion design.",
-            skills=["Figma", "React", "TailwindCSS", "Framer Motion", "CSS3", "HTML5", "Adobe Creative Suite", "UX Research"],
+            skills=[
+                "Figma",
+                "React",
+                "TailwindCSS",
+                "Framer Motion",
+                "CSS3",
+                "HTML5",
+                "Adobe Creative Suite",
+                "UX Research",
+            ],
             linkedin_url="https://linkedin.com/in/sarah-chen-demo",
             portfolio_url="https://behance.net/sarah-chen-demo",
-            experience_level="lead"
+            experience_level="lead",
         )
 
         db.add_all([elena, alex, sarah])
@@ -65,7 +94,9 @@ def seed_database():
         db.refresh(elena)
         db.refresh(alex)
         db.refresh(sarah)
-        print(f"Seeded 3 team members: Elena (ID: {elena.id}), Alex (ID: {alex.id}), Sarah (ID: {sarah.id})")
+        print(
+            f"Seeded 3 team members: Elena (ID: {elena.id}), Alex (ID: {alex.id}), Sarah (ID: {sarah.id})"
+        )
 
         print("Seeding Portfolio Projects...")
         # 2. Portfolio Projects
@@ -73,24 +104,40 @@ def seed_database():
             title="AuraFlow (LLM Agent Platform)",
             description="A state-of-the-art multi-agent orchestration platform that lets enterprises build, test, and deploy collaborative LLM agents with vector database RAG search. Features an interactive flow builder and token consumption diagnostics.",
             domain="LLM",
-            tech_stack=["Python", "FastAPI", "LangChain", "OpenAI", "Qdrant", "React", "TailwindCSS"],
+            tech_stack=[
+                "Python",
+                "FastAPI",
+                "LangChain",
+                "OpenAI",
+                "Qdrant",
+                "React",
+                "TailwindCSS",
+            ],
             github_link="https://github.com/auronix-tech/auraflow",
             demo_link="https://auraflow.auronix-demo.com",
             price="$8,500",
             created_by=elena.id,
-            is_featured=True
+            is_featured=True,
         )
 
         ecommerce = Project(
             title="Auronix eCommerce Suite",
             description="A premium high-performance headless commerce engine with lightning fast page loads. Built with Next.js App Router, Tailwind CSS, FastAPI, and PostgreSQL. Includes real-time stock sync, analytics dashboards, and Stripe Payment Intents.",
             domain="Web",
-            tech_stack=["React", "Next.js", "FastAPI", "PostgreSQL", "Redis", "Stripe API", "Docker"],
+            tech_stack=[
+                "React",
+                "Next.js",
+                "FastAPI",
+                "PostgreSQL",
+                "Redis",
+                "Stripe API",
+                "Docker",
+            ],
             github_link="https://github.com/auronix-tech/ecommerce-suite",
             demo_link="https://shop.auronix-demo.com",
             price="$4,200",
             created_by=alex.id,
-            is_featured=True
+            is_featured=True,
         )
 
         constellation = Project(
@@ -102,7 +149,7 @@ def seed_database():
             demo_link="https://constellation.auronix-demo.com",
             price="$3,800",
             created_by=sarah.id,
-            is_featured=False
+            is_featured=False,
         )
 
         mcp_bridge = Project(
@@ -114,7 +161,7 @@ def seed_database():
             demo_link="https://mcp.auronix-demo.com",
             price="$2,500",
             created_by=alex.id,
-            is_featured=True
+            is_featured=True,
         )
 
         db.add_all([auraflow, ecommerce, constellation, mcp_bridge])
@@ -123,25 +170,52 @@ def seed_database():
         db.refresh(ecommerce)
         db.refresh(constellation)
         db.refresh(mcp_bridge)
-        print(f"Seeded 4 portfolio projects: AuraFlow, eCommerce, Constellation, HyperMCP")
+        print("Seeded 4 portfolio projects: AuraFlow, eCommerce, Constellation, HyperMCP")
 
         # Set up project members (many-to-many relationship)
         # AuraFlow has Elena (creator), Alex, and Sarah as members
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": auraflow.id, "tm_id": elena.id})
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": auraflow.id, "tm_id": alex.id})
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": auraflow.id, "tm_id": sarah.id})
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": auraflow.id, "tm_id": elena.id},
+        )
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": auraflow.id, "tm_id": alex.id},
+        )
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": auraflow.id, "tm_id": sarah.id},
+        )
 
         # eCommerce has Alex (creator) and Sarah
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": ecommerce.id, "tm_id": alex.id})
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": ecommerce.id, "tm_id": sarah.id})
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": ecommerce.id, "tm_id": alex.id},
+        )
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": ecommerce.id, "tm_id": sarah.id},
+        )
 
         # Constellation has Sarah (creator) and Alex
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": constellation.id, "tm_id": sarah.id})
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": constellation.id, "tm_id": alex.id})
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": constellation.id, "tm_id": sarah.id},
+        )
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": constellation.id, "tm_id": alex.id},
+        )
 
         # HyperMCP has Alex (creator) and Elena
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": mcp_bridge.id, "tm_id": alex.id})
-        db.execute(text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"), {"p_id": mcp_bridge.id, "tm_id": elena.id})
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": mcp_bridge.id, "tm_id": alex.id},
+        )
+        db.execute(
+            text("INSERT INTO project_members (project_id, team_member_id) VALUES (:p_id, :tm_id)"),
+            {"p_id": mcp_bridge.id, "tm_id": elena.id},
+        )
 
         db.commit()
         print("Associated team members with projects.")
@@ -157,7 +231,7 @@ def seed_database():
             testimonial="The team at Auronix Technologies delivered our route optimizer ahead of schedule. The impact on our daily operations was immediate—we saved thousands in fuel costs in the first month alone.",
             project_url="https://logitrack-case-study.com",
             is_featured=True,
-            completed_at=datetime(2025, 11, 15)
+            completed_at=datetime(2025, 11, 15),
         )
 
         finsphere = ClientProject(
@@ -169,7 +243,7 @@ def seed_database():
             testimonial="Auronix has stellar expertise in LLMs and AI compliance. They built a custom, on-prem solution for us that met all our strict security audits, keeping our client data completely private.",
             project_url="https://finsphere-case-study.com",
             is_featured=True,
-            completed_at=datetime(2026, 3, 20)
+            completed_at=datetime(2026, 3, 20),
         )
 
         medvantage = ClientProject(
@@ -181,7 +255,7 @@ def seed_database():
             testimonial="The MedVantage integration was a monumental success. Auronix built a clinical extraction pipeline that is both HIPAA compliant and incredibly precise. Our admin team saves hours every day.",
             project_url="https://medvantage-case-study.com",
             is_featured=True,
-            completed_at=datetime(2026, 5, 12)
+            completed_at=datetime(2026, 5, 12),
         )
 
         db.add_all([logitrack, finsphere, medvantage])
@@ -231,7 +305,7 @@ This dynamic feeling keeps your portfolio interactive and keeps users engaged. T
             author_id=sarah.id,
             published_at=datetime(2026, 6, 1),
             is_published=True,
-            tags=["React", "CSS", "Trigonometry", "Framer Motion"]
+            tags=["React", "CSS", "Trigonometry", "Framer Motion"],
         )
 
         post2 = BlogPost(
@@ -260,7 +334,7 @@ By following clean structure and proper middleware configurations, your FastAPI 
             author_id=elena.id,
             published_at=datetime(2026, 6, 20),
             is_published=True,
-            tags=["FastAPI", "Python", "PostgreSQL", "Database Tuning"]
+            tags=["FastAPI", "Python", "PostgreSQL", "Database Tuning"],
         )
 
         db.add_all([post1, post2])
@@ -275,6 +349,7 @@ By following clean structure and proper middleware configurations, your FastAPI 
         raise e
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     seed_database()

@@ -1,0 +1,80 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# ─────────────────────────────────────────────────────────────────────────
+# IMPORTANT: Render does NOT run docker-compose.
+#
+# A Render web service builds and runs the Dockerfile — one container, on its
+# own. The postgres service in docker-compose.yml does not come with it, so
+# this blueprint needs a database that already exists somewhere reachable and
+# is given to it as DATABASE_URL.
+#
+# Do not try to run Postgres inside the app container on Render: the
+# filesystem is ephemeral, so every deploy, restart, and free-tier idle
+# spin-down would wipe the data.
+#
+# Where DATABASE_URL can point:
+#   - Postgres you host yourself (a VPS running docker-compose.yml, reachable
+#     over the network with sslmode=require)
+#   - A managed Postgres: Render's own, Neon, or Supabase
+#
+# If you would rather keep the containerised database from docker-compose.yml,
+# deploy the whole stack to a machine you control instead of Render — see the
+# Deployment section of README.md.
+# ─────────────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: auronix
+    runtime: docker
+    plan: free
+    region: singapore          # nearest to India; also: oregon, frankfurt, ohio, virginia
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+
+    envVars:
+      # ---- Database -------------------------------------------------------
+      # Set this when applying the blueprint. app/core/config.py prefers
+      # DATABASE_URL over the individual DB_* parts, and rewrites the legacy
+      # "postgres://" scheme some providers still emit.
+      # Use sslmode=require for anything not on localhost.
+      - key: DATABASE_URL
+        sync: false
+
+      # ---- Application ----------------------------------------------------
+      - key: ENVIRONMENT
+        value: production
+
+      # Must stay false. When true the API returns raw exception text, which
+      # for database errors includes the failing SQL and its parameters.
+      # config.validate() refuses to boot a production instance with DEBUG on.
+      - key: DEBUG
+        value: "false"
+
+      # Signs admin JWTs. Render generates a strong value on first apply and
+      # keeps it stable across deploys. Changing it invalidates live sessions.
+      - key: SECRET_KEY
+        generateValue: true
+
+      # ---- Admin panel ----------------------------------------------------
+      # ADMIN_PASSWORD_HASH is a bcrypt hash, never the password. Generate:
+      #   python -c "import bcrypt;print(bcrypt.hashpw(b'your-password', bcrypt.gensalt()).decode())"
+      #
+      # Paste it UNESCAPED here. The "$" doubling described in
+      # .env.docker.example is a Docker Compose quirk and does not apply to
+      # Render's environment variables.
+      #
+      # Without the hash the app refuses to start, rather than coming up with
+      # admin login unsecured.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+
+      # ---- CORS -----------------------------------------------------------
+      # The frontend is served from this same service, so requests are
+      # same-origin and CORS is not exercised in normal use. Update this to
+      # your custom domain once one is attached.
+      - key: ALLOWED_ORIGINS
+        value: https://auronix.onrender.com

@@ -1,14 +1,25 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-sqlalchemy==2.0.51
-psycopg2-binary==2.9.12
-python-dotenv==1.0.0
-pydantic==2.13.4
-pydantic-settings==2.14.2
-email-validator==2.3.0
-pillow==11.0.0
-python-multipart==0.0.6
-python-jose[cryptography]==3.5.0
-passlib==1.7.4
-bcrypt==5.0.0
+# Pinned to the versions the application is actually developed and tested
+# against. The previous pins had drifted from reality — notably bcrypt 5.0.0,
+# which is incompatible with passlib 1.7.4 and made every password hash raise.
+# passlib has since been dropped in favour of the bcrypt API directly.
 
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+starlette==0.52.1
+
+sqlalchemy==2.0.45
+psycopg2-binary==2.9.10
+
+pydantic==2.13.4
+pydantic-settings==2.9.1
+email-validator==2.2.0
+
+python-dotenv==1.2.2
+python-multipart==0.0.9
+
+# Auth
+python-jose[cryptography]==3.3.0
+bcrypt==4.0.1
+
+# Image pipeline (app/images.py)
+pillow==11.2.1

@@ -6,7 +6,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Hexagon, LayoutList, Settings, Rocket, Activity, Code2, Server, Cloud, Database, Leaf, Zap, Book, Box, ShoppingCart } from 'lucide-react';
-import { projectsAPI, teamAPI } from '../services/api';
+import { projectsAPI, teamAPI, imageUrl } from '../services/api';
 import './ProjectDetail.css';
 import Loader from '../components/Loader';
 
@@ -110,7 +110,7 @@ function TeamConstellation({ members }) {
               <stop offset="0%" stopColor="#A18F68" stopOpacity="0.9" />
               <stop offset="100%" stopColor="#262626" stopOpacity="0.4" />
             </radialGradient>
-            {members.map((m, i) => {
+            {members.map((m) => {
               const rs = getRoleStyle(m.role);
               return (
                 <radialGradient key={m.id} id={`nodGrad${m.id}`} cx="50%" cy="50%" r="50%">
@@ -185,9 +185,9 @@ function TeamConstellation({ members }) {
             >
               {/* Avatar */}
               <div className="satellite-avatar">
-                {member.profile_image_data && member.profile_image_type ? (
+                {member.has_image ? (
                   <img
-                    src={`data:${member.profile_image_type};base64,${member.profile_image_data}`}
+                    src={imageUrl('team', member.id, member.updated_at)}
                     alt={member.name}
                   />
                 ) : (
@@ -307,10 +307,10 @@ export default function ProjectDetail() {
     <div className="pd-page">
       {/* ── Hero Banner ── */}
       <div className="pd-hero" style={{ '--domain-color': domainColor }}>
-        {project.project_image_data && (
+        {project.has_image && (
           <div style={{
             position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage: `url(data:${project.project_image_type};base64,${project.project_image_data})`,
+            backgroundImage: `url(${imageUrl('projects', project.id, project.updated_at)})`,
             backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15
           }} />
         )}
@@ -423,9 +423,9 @@ export default function ProjectDetail() {
                     style={{ '--member-color': rs.color, '--member-glow': rs.glow }}
                   >
                     <div className="ptm-avatar-wrap">
-                      {m.profile_image_data && m.profile_image_type ? (
+                      {m.has_image ? (
                         <img
-                          src={`data:${m.profile_image_type};base64,${m.profile_image_data}`}
+                          src={imageUrl('team', m.id, m.updated_at)}
                           alt={m.name}
                           className="ptm-avatar"
                         />

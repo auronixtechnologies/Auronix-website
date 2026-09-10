@@ -3,18 +3,19 @@ API routes for client projects and case studies.
 Endpoints: GET /client-projects, GET /client-projects/{id}, POST /client-projects
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import List
-from app.db import get_db
-from app.schemas import ClientProjectCreate, ClientProjectUpdate, ClientProjectResponse
+
+from app.core.db import get_db
+from app.core.security import require_admin
+from app.media.images import build_image_response
+from app.schemas import ClientProjectCreate, ClientProjectResponse, ClientProjectUpdate
 from app.services import ClientProjectService
-from app.auth import require_admin
 
 router = APIRouter(prefix="/client-projects", tags=["client_projects"])
 
 
-@router.get("", response_model=List[ClientProjectResponse])
+@router.get("", response_model=list[ClientProjectResponse])
 def get_client_projects(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
@@ -22,12 +23,19 @@ def get_client_projects(
 ):
     """
     Get all client projects/case studies with pagination.
-    
+
     Query Parameters:
     - skip: Number of records to skip (default: 0)
     - limit: Number of records to return (default: 10, max: 100)
     """
     return ClientProjectService.get_client_projects(db, skip=skip, limit=limit)
+
+
+@router.get("/{project_id}/image")
+def get_client_project_image(project_id: int, request: Request, db: Session = Depends(get_db)):
+    """Serve a client project's image. See get_project_image."""
+    record = ClientProjectService.get_client_project_image(db, project_id)
+    return build_image_response(record, "project_image_data", "project_image_type", request)
 
 
 @router.get("/{project_id}", response_model=ClientProjectResponse)
@@ -65,9 +73,7 @@ def update_client_project(
 
     ADMIN ENDPOINT: Requires valid Bearer token.
     """
-    updated_project = ClientProjectService.update_client_project(
-        db, project_id, client_project
-    )
+    updated_project = ClientProjectService.update_client_project(db, project_id, client_project)
     if not updated_project:
         raise HTTPException(status_code=404, detail="Client project not found")
     return updated_project

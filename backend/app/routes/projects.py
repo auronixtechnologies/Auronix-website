@@ -3,41 +3,52 @@ API routes for portfolio projects.
 Endpoints: GET /projects, GET /projects/{id}, POST /projects, PUT /projects/{id}, DELETE /projects/{id}
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from app.db import get_db
-from app.schemas import ProjectCreate, ProjectUpdate, ProjectResponse
+
+from app.core.db import get_db
+from app.core.security import require_admin
+from app.media.images import build_image_response
+from app.schemas import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.services import ProjectService
-from app.auth import require_admin
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
-@router.get("", response_model=List[ProjectResponse])
+@router.get("", response_model=list[ProjectResponse])
 def get_projects(
-    domain: Optional[str] = Query(None, description="Filter by domain (Web, ML, LLM, MCP)"),
+    domain: str | None = Query(None, description="Filter by domain (Web, ML, LLM, MCP)"),
+    category: str | None = Query(
+        None,
+        description="Filter by category (Client Projects, Student Projects, Auronix's Arsenal)",
+    ),
     skip: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     """
-    Get portfolio projects with optional filtering.
-    
-    Query Parameters:
-    - domain: Filter by project domain (optional)
-    - skip: Number of records to skip (default: 0)
-    - limit: Number of records to return (default: 10, max: 100)
-    
-    Example: GET /projects?domain=ML&limit=5
+    Get portfolio projects with optional domain and category filtering.
     """
-    return ProjectService.get_projects(db, domain=domain, skip=skip, limit=limit)
+    return ProjectService.get_projects(db, domain=domain, category=category, skip=skip, limit=limit)
 
 
-@router.get("/featured", response_model=List[ProjectResponse])
+@router.get("/featured", response_model=list[ProjectResponse])
 def get_featured_projects(db: Session = Depends(get_db)):
     """Get featured portfolio projects."""
     return ProjectService.get_featured_projects(db, limit=6)
+
+
+@router.get("/{project_id}/image")
+def get_project_image(project_id: int, request: Request, db: Session = Depends(get_db)):
+    """
+    Serve a project's image.
+
+    Cached indefinitely; clients bust the cache with ?v=<updated_at>. Declared
+    before /{project_id} so the literal "image" segment is not swallowed by
+    the dynamic route.
+    """
+    record = ProjectService.get_project_image(db, project_id)
+    return build_image_response(record, "project_image_data", "project_image_type", request)
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)

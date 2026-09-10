@@ -5,7 +5,8 @@ POST /api/v1/auth/login  →  returns { access_token, token_type }
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from app.auth import verify_admin_credentials, create_access_token, require_admin
+
+from app.core.security import create_access_token, require_admin, verify_admin_credentials
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

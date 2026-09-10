@@ -4,12 +4,13 @@ Combines all route modules into a single router.
 """
 
 from fastapi import APIRouter
-from app.api.routes.team import router as team_router
-from app.api.routes.projects import router as projects_router
-from app.api.routes.contact import router as contact_router
-from app.api.routes.leads import router as leads_router
-from app.api.routes.auth import router as auth_router
-from app.api.routes.blog import router as blog_router
+
+from app.routes.auth import router as auth_router
+from app.routes.blog import router as blog_router
+from app.routes.contact import router as contact_router
+from app.routes.leads import router as leads_router
+from app.routes.projects import router as projects_router
+from app.routes.team import router as team_router
 
 # Create the API router with v1 prefix
 api_router = APIRouter(prefix="/api/v1")

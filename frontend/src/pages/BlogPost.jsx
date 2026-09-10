@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { blogAPI } from '../services/api';
+import { blogAPI, imageUrl } from '../services/api';
 import Loader from '../components/Loader';
 import './pages.css';
 
@@ -163,10 +163,10 @@ export default function BlogPost() {
           </div>
 
           {/* Cover image */}
-          {post.image_data && post.image_type && (
+          {post.has_image && (
             <div className="bpp-cover">
               <img
-                src={`data:${post.image_type};base64,${post.image_data}`}
+                src={imageUrl('blog', post.slug, post.updated_at)}
                 alt={post.title}
                 className="bpp-cover-img"
               />

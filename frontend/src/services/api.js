@@ -1,202 +1,84 @@
 /**
- * API Client Service
- * Centralized HTTP client for all API requests
+ * Public API client — read-only endpoints plus the contact form.
+ *
+ * Writes are NOT here. Every mutating endpoint requires a Bearer token and
+ * lives in adminApi.js, which attaches it. This file previously carried a
+ * duplicate set of create/update/delete methods that sent no Authorization
+ * header; nothing called them and every one would have failed with a 401.
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
-// Generic fetch wrapper with error handling
-async function apiRequest(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    ...options,
-  };
-
-  try {
-    const response = await fetch(url, defaultOptions);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `HTTP error! status: ${response.status}`);
-    }
-
-    // Handle 204 No Content
-    if (response.status === 204) {
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('API Request Error:', error);
-    throw error;
-  }
+/**
+ * Build the URL for a stored image.
+ *
+ * Images are served as bytes from their own endpoint rather than inlined into
+ * list responses as base64, so the browser can cache them. The response is
+ * marked immutable, and `v` (the record's updated_at) changes whenever the
+ * record is edited, which is what busts that cache.
+ *
+ *   imageUrl('projects', 12, project.updated_at)
+ *
+ * Returns null when the record has no image, so callers can render a
+ * placeholder with `imageUrl(...) ?? fallback`.
+ */
+export function imageUrl(resource, id, updatedAt, hasImage = true) {
+  if (!hasImage || id == null) return null;
+  const version = updatedAt ? `?v=${encodeURIComponent(updatedAt)}` : '';
+  return `${API_BASE_URL}/${resource}/${id}/image${version}`;
 }
 
-// ===== Team Members API =====
+/** Fetch wrapper that unwraps JSON and surfaces the API's error detail. */
+async function apiRequest(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || `Request failed with status ${response.status}`);
+  }
+
+  if (response.status === 204) return null;
+  return response.json();
+}
+
+const query = (params) =>
+  Object.entries(params)
+    .filter(([, value]) => value !== null && value !== undefined && value !== '')
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+
+// ===== Team Members =====
 export const teamAPI = {
-  // Get all team members with pagination
-  getTeamMembers: (skip = 0, limit = 10) =>
-    apiRequest(`/team?skip=${skip}&limit=${limit}`),
-
-  // Get specific team member
-  getTeamMember: (id) =>
-    apiRequest(`/team/${id}`),
-
-  // Create team member (admin)
-  createTeamMember: (data) =>
-    apiRequest('/team', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  // Update team member (admin)
-  updateTeamMember: (id, data) =>
-    apiRequest(`/team/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
-  // Delete team member (admin)
-  deleteTeamMember: (id) =>
-    apiRequest(`/team/${id}`, {
-      method: 'DELETE',
-    }),
+  getTeamMembers: (skip = 0, limit = 10) => apiRequest(`/team?${query({ skip, limit })}`),
+  getTeamMember: (id) => apiRequest(`/team/${id}`),
 };
 
-// ===== Projects API =====
+// ===== Portfolio Projects =====
 export const projectsAPI = {
-  // Get all projects with optional domain filter
-  getProjects: (domain = null, skip = 0, limit = 10) => {
-    let endpoint = `/projects?skip=${skip}&limit=${limit}`;
-    if (domain) {
-      endpoint += `&domain=${domain}`;
-    }
-    return apiRequest(endpoint);
-  },
-
-  // Get featured projects
-  getFeaturedProjects: () =>
-    apiRequest('/projects/featured'),
-
-  // Get specific project
-  getProject: (id) =>
-    apiRequest(`/projects/${id}`),
-
-  // Create project (admin)
-  createProject: (data) =>
-    apiRequest('/projects', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  // Update project (admin)
-  updateProject: (id, data) =>
-    apiRequest(`/projects/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
-  // Delete project (admin)
-  deleteProject: (id) =>
-    apiRequest(`/projects/${id}`, {
-      method: 'DELETE',
-    }),
+  getProjects: (domain = null, category = null, skip = 0, limit = 100) =>
+    apiRequest(`/projects?${query({ skip, limit, domain, category })}`),
+  getFeaturedProjects: () => apiRequest('/projects/featured'),
+  getProject: (id) => apiRequest(`/projects/${id}`),
 };
 
-// ===== Client Projects API =====
+// ===== Client Projects / Case Studies =====
 export const clientProjectsAPI = {
-  // Get all client projects
   getClientProjects: (skip = 0, limit = 10) =>
-    apiRequest(`/client-projects?skip=${skip}&limit=${limit}`),
-
-  // Get specific client project
-  getClientProject: (id) =>
-    apiRequest(`/client-projects/${id}`),
-
-  // Create client project (admin)
-  createClientProject: (data) =>
-    apiRequest('/client-projects', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  // Update client project (admin)
-  updateClientProject: (id, data) =>
-    apiRequest(`/client-projects/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
-  // Delete client project (admin)
-  deleteClientProject: (id) =>
-    apiRequest(`/client-projects/${id}`, {
-      method: 'DELETE',
-    }),
+    apiRequest(`/client-projects?${query({ skip, limit })}`),
+  getClientProject: (id) => apiRequest(`/client-projects/${id}`),
 };
 
-// ===== Contact/Leads API =====
+// ===== Contact =====
 export const contactAPI = {
-  // Submit contact form
   submitContact: (data) =>
-    apiRequest('/contact', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  // Get all leads (admin)
-  getLeads: (skip = 0, limit = 50) =>
-    apiRequest(`/admin/leads?skip=${skip}&limit=${limit}`),
-
-  // Get specific lead (admin)
-  getLead: (id) =>
-    apiRequest(`/admin/leads/${id}`),
-
-  // Delete lead (admin)
-  deleteLead: (id) =>
-    apiRequest(`/admin/leads/${id}`, {
-      method: 'DELETE',
-    }),
+    apiRequest('/contact', { method: 'POST', body: JSON.stringify(data) }),
 };
 
-// ===== Blog API =====
+// ===== Blog =====
 export const blogAPI = {
-  // Get all published blog posts
-  getBlogPosts: (skip = 0, limit = 10) =>
-    apiRequest(`/blog?skip=${skip}&limit=${limit}`),
-
-  // Get specific blog post by slug
-  getBlogPost: (slug) =>
-    apiRequest(`/blog/${slug}`),
-
-  // Create blog post (admin)
-  createBlogPost: (data) =>
-    apiRequest('/blog', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  // Update blog post (admin)
-  updateBlogPost: (id, data) =>
-    apiRequest(`/blog/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
-  // Delete blog post (admin)
-  deleteBlogPost: (id) =>
-    apiRequest(`/blog/${id}`, {
-      method: 'DELETE',
-    }),
-};
-
-export default {
-  teamAPI,
-  projectsAPI,
-  clientProjectsAPI,
-  contactAPI,
-  blogAPI,
+  getBlogPosts: (skip = 0, limit = 10) => apiRequest(`/blog?${query({ skip, limit })}`),
+  getBlogPost: (slug) => apiRequest(`/blog/${slug}`),
 };

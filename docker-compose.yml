@@ -1,40 +1,92 @@
+# Full stack: API + built frontend + PostgreSQL, self-contained.
+#
+#   cp .env.docker.example .env.docker    # fill in the secrets, then:
+#   docker compose up -d --build
+#   -> site and API on http://localhost:8000
+#
+# The app reaches the database at "postgres:5432" — the service name on the
+# private network below, not the host port mapping. Nothing outside the stack
+# needs the database, so the published 5436 exists purely for local tooling
+# (psql, a GUI client) and can be dropped without affecting anything.
+#
+# Data lives in the named volume auronix_postgres_data and survives
+# `docker compose down`. It is destroyed by `docker compose down -v`.
+
 services:
   postgres:
     image: postgres:15-alpine
     container_name: auronix-db
 
+    # Only the database's own credentials — deliberately not env_file, so the
+    # application's SECRET_KEY and admin hash never enter this container.
+    # Compromising Postgres should not also hand over the JWT signing key.
+    # These values contain no "$", so Compose interpolation is safe here.
     environment:
-      POSTGRES_USER: auronix_admin
-      POSTGRES_PASSWORD: Auronix2602
-      POSTGRES_DB: auronix_db
+      POSTGRES_USER: ${POSTGRES_USER:-auronix_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Auronix2602}
+      POSTGRES_DB: ${POSTGRES_DB:-auronix_db}
 
     ports:
-      - "5435:5432"
+      - "${POSTGRES_PORT:-5436}:5432"
 
     volumes:
       - auronix_postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auronix_admin"]
+      # "$$" escapes Compose's interpolation so the variables are expanded by
+      # the shell inside the container, where POSTGRES_USER/DB are set.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
     restart: unless-stopped
 
     networks:
       - auronix
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: auronix-app:latest
+    container_name: auronix-app
 
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@auronix.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+    # Wait for Postgres to accept connections, not merely to have started.
+    # Without the health condition the app races the database on first boot.
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # Values are passed through verbatim — Compose does not interpolate an
+    # env_file. That is what lets ADMIN_PASSWORD_HASH hold a raw bcrypt hash
+    # ($2b$12$...) without escaping.
+    env_file:
+      - .env.docker
 
     ports:
-      - "5050:80"
+      - "${APP_PORT:-8000}:8000"
+
+    restart: unless-stopped
+
+    networks:
+      - auronix
+
+  # Database GUI. Opt-in, so it never runs in a deployment:
+  #   docker compose --profile tools up -d
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: auronix-pgadmin
+    profiles: ["tools"]
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@auronix.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
 
     depends_on:
       - postgres

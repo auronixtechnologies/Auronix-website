@@ -5,11 +5,11 @@ Endpoints: POST /contact, GET /contact (admin)
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
-from app.db import get_db
+
+from app.core.db import get_db
+from app.core.security import require_admin
 from app.schemas import LeadCreate, LeadResponse
 from app.services import LeadService
-from app.auth import require_admin
 
 router = APIRouter(tags=["contact"])
 
@@ -21,14 +21,14 @@ def submit_contact(
 ):
     """
     Submit a contact form inquiry.
-    
+
     This creates a lead in the database for follow-up by the team.
     In production, consider adding email notifications.
     """
     return LeadService.create_lead(db, lead)
 
 
-@router.get("/admin/leads", response_model=List[LeadResponse])
+@router.get("/admin/leads", response_model=list[LeadResponse])
 def get_leads(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
