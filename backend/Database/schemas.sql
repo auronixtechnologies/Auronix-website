@@ -17,9 +17,6 @@ CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    -- Read and written by ProjectRepository. Also added by
-    -- migration_alter_queries.sql, which covers databases created before this
-    -- column existed; both are idempotent so declaring it here is safe.
     category VARCHAR(100) NOT NULL DEFAULT 'Student Projects',
     domain VARCHAR(100) NOT NULL,
     tech_stack JSONB NOT NULL,
